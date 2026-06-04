@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/providers/auth-provider';
-import { mockUsers, mockAuditLogs, mockSystemMetrics } from '@/lib/mock-data';
+import { mockSystemMetrics } from '@/lib/mock-data';
+import { useAdminUsers } from '@/features/admin/hooks/useAdminUsers'
+import { useAdminAuditLogs } from '@/features/admin/hooks/useAdminAuditLogs'
+import { useApiUsage } from '@/features/admin/hooks/useApiUsage'
 import { PageHeader, MetricCard } from '@/components/shared';
 import {
   Table,
@@ -63,19 +66,21 @@ function getActionBadgeColor(action: string) {
 
 export function AdminUsers() {
   const { user } = useAuth();
-  const isLoading = useLoadingState();
+  const { data, isLoading, isError, refetch } = useAdminUsers(20, 0, '')
 
   if (user?.role !== 'ADMIN') return null;
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Users"
-        description="Manage platform users"
-      />
+      <PageHeader title="Users" description="Manage platform users" />
 
       {isLoading ? (
         <div className="h-64 bg-muted animate-pulse rounded-lg" />
+      ) : isError ? (
+        <div className="rounded-lg border p-4">
+          <p className="text-destructive">Failed to load users.</p>
+          <button onClick={() => refetch()} className="mt-2 btn">Retry</button>
+        </div>
       ) : (
         <div className="rounded-lg border">
           <Table>
@@ -88,19 +93,16 @@ export function AdminUsers() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+              {(data?.users || []).map((u: any) => (
+                <TableRow key={u.id}>
+                  <TableCell className="font-medium">{u.name}</TableCell>
+                  <TableCell>{u.email}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={getRoleBadgeColor(user.role)}
-                    >
-                      {user.role}
+                    <Badge variant="secondary" className={getRoleBadgeColor(u.role)}>
+                      {u.role}
                     </Badge>
                   </TableCell>
-                  <TableCell>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell>{u.createdAt ? formatDate(u.createdAt) : '-'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -113,16 +115,13 @@ export function AdminUsers() {
 
 export function AdminAuditLogs() {
   const { user } = useAuth();
-  const isLoading = useLoadingState();
+  const { data, isLoading, isError, refetch } = useAdminAuditLogs()
 
   if (user?.role !== 'ADMIN') return null;
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Audit Logs"
-        description="Track system activity"
-      />
+      <PageHeader title="Audit Logs" description="Track system activity" />
 
       {isLoading ? (
         <div className="space-y-3">
@@ -130,28 +129,24 @@ export function AdminAuditLogs() {
             <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
+      ) : isError ? (
+        <div className="rounded-lg border p-4">
+          <p className="text-destructive">Failed to load audit logs.</p>
+          <button onClick={() => refetch()} className="mt-2 btn">Retry</button>
+        </div>
       ) : (
         <div className="space-y-3">
-          {mockAuditLogs.map((log) => (
+          {(data?.logs || []).map((log: any) => (
             <Card key={log.id}>
               <CardContent className="p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <p className="font-medium">{log.userName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {log.entity} ({log.entityId})
-                    </p>
+                    <p className="font-medium">{log.userId ?? 'system'}</p>
+                    <p className="text-sm text-muted-foreground">{log.entityType} ({log.entityId})</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge
-                      variant="secondary"
-                      className={getActionBadgeColor(log.action)}
-                    >
-                      {log.action}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">
-                      {formatDate(log.timestamp)}
-                    </span>
+                    <Badge variant="secondary" className={getActionBadgeColor(log.action || '')}>{log.action}</Badge>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDate(log.createdAt || log.createdAt)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -222,4 +217,44 @@ export function AdminSystemMetrics() {
       )}
     </div>
   );
+}
+
+export function AdminApiUsage() {
+  const { user } = useAuth()
+  const { data, isLoading, isError, refetch } = useApiUsage()
+
+  if (user?.role !== 'ADMIN') return null
+
+  return (
+    <div className="space-y-4">
+      <PageHeader title="API Usage" description="WeatherAI and Forestry usage overview" />
+      {isLoading ? (
+        <div className="h-40 bg-muted animate-pulse rounded-lg" />
+      ) : isError ? (
+        <div className="rounded-lg border p-4">
+          <p className="text-destructive">Failed to load API usage.</p>
+          <button onClick={() => refetch()} className="mt-2 btn">Retry</button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>WeatherAI</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Total requests (30d): {(data?.weather?.totalRequests30d ?? 0)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Forestry</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Total analyses (30d): {(data?.forestry?.totalAnalyses30d ?? 0)}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  )
 }
