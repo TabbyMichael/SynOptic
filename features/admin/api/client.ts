@@ -43,8 +43,18 @@ export async function fetchSystemMetrics() {
       'x-user-role': (typeof window !== 'undefined' && (window as any).__TEST_USER_ROLE) || 'ADMIN',
     },
   });
-  if (!res.ok) throw new Error('Failed to fetch system metrics');
-  return (await res.json()).data;
+  const text = await res.text();
+  if (!res.ok) {
+    let message = text;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') {
+        message = (parsed.error as string) || (parsed.message as string) || text;
+      }
+    } catch {}
+    throw new Error(`Failed to fetch system metrics: ${message}`);
+  }
+  return JSON.parse(text).data;
 }
 
 export async function fetchApiUsage() {
@@ -54,6 +64,16 @@ export async function fetchApiUsage() {
       'x-user-role': (typeof window !== 'undefined' && (window as any).__TEST_USER_ROLE) || 'ADMIN',
     },
   });
-  if (!res.ok) throw new Error('Failed to fetch api usage');
-  return (await res.json()).data;
+  const text = await res.text();
+  if (!res.ok) {
+    let message = text;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') {
+        message = (parsed.error as string) || (parsed.message as string) || text;
+      }
+    } catch {}
+    throw new Error(`Failed to fetch api usage: ${message}`);
+  }
+  return JSON.parse(text).data;
 }

@@ -146,7 +146,7 @@ export function AdminAuditLogs() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className={getActionBadgeColor(log.action || '')}>{log.action}</Badge>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDate(log.createdAt || log.createdAt)}</span>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">{formatDate(log.createdAt || log.timestamp)}</span>
                   </div>
                 </div>
               </CardContent>
