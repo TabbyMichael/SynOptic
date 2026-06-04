@@ -1,19 +1,36 @@
 # Documentation Standards
 
-Professional documentation is a core value of AgroInsight AI.
+This file defines the standards expected for all documentation in the AgroInsight AI repository.
 
-## Principles
-- **Clarity**: Use simple, direct language.
-- **Accuracy**: Keep documentation in sync with the code.
-- **Completeness**: Explain the 'why', not just the 'how'.
-- **Visuals**: Use Mermaid diagrams for complex flows.
+Standards
 
-## File Standards
-- **README.md**: Entry point, overview, and quick start.
-- **ARCHITECTURE.md**: System design, domain models, and strategy.
-- **API.md**: Detailed endpoint documentation.
-- **CONTRIBUTING.md**: Guidelines for developers.
-- **DECISIONS.md**: Log of architectural choices.
+- Professional: Write in clear, unambiguous language aimed at engineers and product stakeholders.
+- Production quality: Documentation must be accurate, actionable and kept up to date with code changes.
+- Explain reasoning: Where possible explain why decisions were made, not just how.
+- Include diagrams: Use mermaid diagrams for architecture and flow explanations.
+- Include examples: Provide request/response examples, CLI snippets, and minimal reproducible samples.
+- Include operational guidance: Healthchecks, scaling notes, and common troubleshooting steps.
 
-## Review Process
-Documentation changes should be reviewed as part of the PR process. A PR is not 'Done' until the documentation is updated.
+Structure Guidelines
+
+- README.md: high-level overview and getting started.
+- ARCHITECTURE.md: design principles, diagrams, data model and operational concerns.
+- API.md: OpenAPI-style reference with schemas and examples.
+- CONTRIBUTING.md: workflow and expectations.
+- DECISIONS.md: architecture decision records.
+
+Formatting
+
+- Use Markdown with fenced code blocks.
+- Use mermaid for diagrams.
+- When referencing files in the repo, include workspace-relative path links where possible.
+
+Maintenance
+
+- Update docs as part of PRs that change behavior.
+- Major changes must include a short migration/upgrade guide.
+
+Troubleshooting Guidance (examples)
+
+- If scheduled ingestion fails: check VERCEL_CRON_TOKEN, ingestion logs, and WeatherAI throttling.
+- If alerts are not triggering: inspect alert_rules.active, verify snapshots contain the metric, check alert evaluation logs and audit entries.

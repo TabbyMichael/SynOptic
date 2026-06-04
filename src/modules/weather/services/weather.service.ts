@@ -1,6 +1,6 @@
 import { weatherAiClient } from '../../../infrastructure/weather-ai/weather-ai.client';
 import { db } from '../../../infrastructure/database/db.service';
-import { weatherSnapshots } from '../../../infrastructure/database/schema';
+import { weatherSnapshots } from '../../../../drizzle/schema';
 import { WeatherMapper, WeatherSnapshot } from '../utils/weather.mapper';
 import { logger } from '../../../infrastructure/logger/logger.service';
 

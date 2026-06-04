@@ -1,4 +1,4 @@
-import { farms } from '../../../infrastructure/database/schema';
+import { farms } from '../../../../drizzle/schema';
 
 export type Farm = typeof farms.$inferSelect;
 export type NewFarm = typeof farms.$inferInsert;

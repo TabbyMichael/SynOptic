@@ -5,13 +5,11 @@ import { ThemeProvider } from '@/lib/providers/theme-provider';
 import { AuthProvider } from '@/lib/providers/auth-provider';
 import { QueryProvider } from '@/lib/providers/query-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { DEFAULT_METADATA, ORGANIZATION_SCHEMA } from './metadata';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'AgroInsight AI - Farm Intelligence Platform',
-  description: 'Intelligent farm monitoring, forestry analysis, and weather intelligence',
-};
+export const metadata: Metadata = DEFAULT_METADATA;
 
 export default function RootLayout({
   children,
@@ -31,6 +29,12 @@ export default function RootLayout({
             <AuthProvider>
               {children}
               <Toaster />
+              {/* Structured data: Organization JSON-LD. For larger schemas, move this to `app/head.tsx`. */}
+              <script
+                id="organization-jsonld"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_SCHEMA) }}
+              />
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>

@@ -1,5 +1,5 @@
 import { WeatherAiCurrentResponse } from '../../../infrastructure/weather-ai/weather-ai.types';
-import { weatherSnapshots } from '../../../infrastructure/database/schema';
+import { weatherSnapshots } from '../../../../drizzle/schema';
 
 export type WeatherSnapshot = typeof weatherSnapshots.$inferSelect;
 export type NewWeatherSnapshot = typeof weatherSnapshots.$inferInsert;

@@ -1,6 +1,6 @@
 import { weatherAiClient } from '../../../infrastructure/weather-ai/weather-ai.client';
 import { db } from '../../../infrastructure/database/db.service';
-import { analyses } from '../../../infrastructure/database/schema';
+import { analyses } from '../../../../drizzle/schema';
 import { auditLogger } from '../../audit/services/audit-logger.service';
 import { farmService } from '../../farms/services/farm.service';
 import { logger } from '../../../infrastructure/logger/logger.service';

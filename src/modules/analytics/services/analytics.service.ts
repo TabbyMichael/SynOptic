@@ -1,5 +1,5 @@
 import { db } from '../../../infrastructure/database/db.service';
-import { analyses, alertEvents, alertRules } from '../../../infrastructure/database/schema';
+import { analyses, alertEvents, alertRules } from '../../../../drizzle/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 
 export interface FarmAnalytics {

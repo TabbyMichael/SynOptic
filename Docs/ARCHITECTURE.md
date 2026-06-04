@@ -1,163 +1,166 @@
-# Architecture
-
-This document provides a detailed architecture overview for AgroInsight AI, including domain models, system boundaries, data flow, background jobs, caching, logging, and operational considerations.
+# Architecture - AgroInsight AI
 
 ## System Overview
 
-AgroInsight AI is a modular platform composed of:
+AgroInsight AI is organized around clear domains: Users, Farms, Weather, Forestry, Alerts, Analytics and Audit. The system is a modular, feature-first monolith where frontend and backend live in the same repository and communicate via Next.js API Routes.
 
-- **Frontend (Next.js)**: UI and experience, utilizing server and client components.
-- **API Layer**: Next.js API routes that orchestrate domain services.
-- **Service Layer**: Business logic and policy enforcement.
-- **Repository Layer**: Database access via Drizzle ORM.
-- **Background Workers/Cron**: Data ingestion, snapshots, and analytics evaluation.
-- **External Systems**: WeatherAI, imagery providers, and notification channels.
+Key runtime flows:
 
-### System Diagram
+- Snapshot ingestion: External WeatherAI → ingestion job → weather_snapshots table
+- Alert evaluation: Snapshot → AlertService evaluates rules → alert_events created → audit logged
+- Analytics derivation: Periodic background jobs aggregate snapshots into analytics tables
 
-```mermaid
-flowchart LR
-  F[Frontend] -->|API Calls| API[API (Next.js)]
-  API --> S[Service Layer]
-  S --> R[Repository (Drizzle)
-Postgres]
-  S --> E[External APIs
-WeatherAI, Imagery]
-  S --> J[Background Jobs]
-  J --> R
-  R -->|events| OL{Audit Logs}
-```
+## Domain Model (high level)
 
-## Domain Model
-
-- **User**: Authentication identity, roles, and permissions.
-- **Organization**: Multi-team grouping for enterprise support.
-- **Farm**: Core entity representing agricultural land, including plots and sensors.
-- **WeatherSnapshot**: Time-series meteorological data captured for farm coordinates.
-- **ForestryAnalysis**: Results from satellite imagery analysis, canopy cover, and change events.
-- **Alert**: Rule-based alerts with evaluation history, status, and notifications.
-- **AnalyticsReport**: Derived KPIs and aggregations for decision support.
-
-### Relationships
-
-```mermaid
-classDiagram
-  User "1" -- "*" Farm : owns
-  Farm "1" -- "*" WeatherSnapshot : has
-  Farm "1" -- "*" ForestryAnalysis : has
-  Alert "*" -- "1" Farm : targets
-```
+- User: identity, roles, permissions
+- Farm: metadata, location, sensors
+- WeatherSnapshot: timestamped metrics (temp, humidity, wind, rainfall...)
+- AlertRule: metric, operator, threshold, active, farmId
+- AlertEvent: ruleId, triggeredValue, status
+- ForestryRecord: canopy metrics, NDVI, change events
+- Analytics: derived KPIs and aggregated time-series
 
 ## Authentication Architecture
 
-- Implemented using **Auth.js** (formerly NextAuth.js).
-- Supports multiple providers (Email, Google, etc.).
-- Session handling uses secure, encrypted cookies.
-- Middleware handles initial session verification for protected routes.
+- Auth.js handles sign-in, sessions and provider integrations.
+- NextAuth is configured as the single source of truth for sessions used by API and UI.
 
 ## RBAC Architecture
 
-- **Roles**: Admin, Manager, Analyst, Operator.
-- **Policy Layer**: Centralized authorization logic that maps roles to allowed actions.
-- Granular resource-level checks (e.g., ensuring a user can only access their own farms).
-
-```mermaid
-flowchart LR
-  Request --> API
-  API --> Policy[Policy Layer]
-  Policy -->|allow| Service
-  Policy -->|deny| Audit
-```
+- Policy-based authorization layered into API handlers.
+- Roles are coarse-grained (admin, manager, operator, analyst) and policies implement finer-grained checks (resource ownership, farm-scoped access).
 
 ## Farm Domain
 
-- Geospatial management of farm boundaries using GeoJSON.
-- Integration with local sensors for real-time field data.
-- Metadata tagging for crop types and soil conditions.
+Farming is the primary scope: farms own sensors, snapshots, rules and analytics. Farm-level operations are scoped by farmId in database queries and validated via policy checks in the service layer.
 
 ## Weather Domain
 
-- **Ingestion**: Scheduled snapshots per farm via WeatherAI API.
-- **Storage**: Optimized time-series storage in PostgreSQL.
-- **Evaluation**: Historical comparison to detect anomalies.
+- Weather snapshots are stored as normalized rows with metrics typed and indexed by (farm_id, timestamp).
+- Snapshots are the canonical source for alerting and analytics derivation.
 
 ## Forestry Domain
 
-- Periodic satellite imagery analysis (NDVI, canopy density).
-- Automated change detection for deforestation or growth monitoring.
+- Forestry data stores per-plot canopy metrics and time-series imagery-derived scores (NDVI, LAI).
+- Change-detection runs as background jobs to detect canopy loss and trigger administrative alerts.
 
 ## Alerts Domain
 
-- User-defined rules with configurable thresholds.
-- Evaluation engine runs in background to check conditions against fresh data.
-- Multi-channel notification pipeline (In-app, Email, SMS).
+- AlertRules define simple threshold checks (>, <, >=, <=, ==) over metrics.
+- AlertService evaluates rules per snapshot and inserts AlertEvents when conditions are met.
+- AlertEvents are audited and create notifications for downstream systems.
 
 ## Analytics Domain
 
-- Batch processing of raw data into materialized views for performance.
-- Aggregation of weather and forestry metrics into actionable KPIs.
+- Analytics jobs run periodically to aggregate snapshots (hourly/daily) into KPI tables.
+- Aggregations are append-only; derived tables are re-computable from raw snapshots.
 
 ## Audit Domain
 
-- Immutable logs capturing every significant state change.
-- Includes actor, action, timestamp, and before/after snapshots.
+- Immutable audit logs record CRUD for critical entities and security events. Stored with timestamps, actor id, and metadata.
 
 ## Database Architecture
 
-- **PostgreSQL (Neon)**: Serverless-friendly relational database.
-- **Drizzle ORM**: Type-safe schema definition and query building.
-- **Migrations**: Versioned SQL migrations for schema evolution.
+- PostgreSQL (Neon) is used with normalized tables and indices for time-series queries.
+- Key tables: users, farms, weather_snapshots, alert_rules, alert_events, forestry_records, analytics_{daily,hourly}, audit_logs.
+
+### Example schema notes
+
+- `weather_snapshots` uses JSONB for optional metrics but keeps commonly queried fields (temp, humidity, rainfall) as columns for indexing.
+- Time partitioning or hypertables (TimescaleDB) are optional future improvements for massive retention.
 
 ## Repository Pattern
 
-- Decouples business logic from data access.
-- Repositories return clean DTOs, avoiding leak of ORM-specific logic to services.
+- Repositories abstract DB access using Drizzle ORM. Repositories expose typed operations (e.g., `weatherRepository.insertSnapshot`, `alertRepository.findActiveByFarm`).
 
 ## Service Layer
 
-- Coordinates multiple repositories and external clients.
-- Enforces business rules and data integrity.
+- Services contain business logic and orchestrate repositories, external clients and policy checks. They are side-effecting and call auditLogger and logger where relevant.
+
+## Policy Layer
+
+- Policy functions encapsulate authorization rules and are invoked at API boundaries and in services when resource-scoped decisions are required.
 
 ## Background Jobs
 
-- **Vercel Cron**: Triggers for scheduled tasks.
-- **Serverless Functions**: Execution environment for jobs.
-- **Queueing**: Reliable processing of long-running tasks.
+- Two execution models supported:
+  - Lightweight scheduled jobs using Vercel Cron that call internal API routes
+  - Worker-based jobs (recommended for heavy processing) using an external worker platform
+
+- Jobs: snapshot ingestion, alert evaluation, forestry change-detection, analytics derivation, data retention cleanup.
 
 ## Caching Strategy
 
-- **SWR/TanStack Query**: Client-side caching and revalidation.
-- **Redis (Future)**: Shared server-side cache for hot data.
+- Use HTTP caching (Cache-Control) on read endpoints where data is eventually consistent.
+- In-memory caches (Lru or Redis) for expensive lookups like farm metadata or computed aggregates.
 
 ## Logging Strategy
 
-- **Structured Logging**: Using Pino for machine-readable logs.
-- **Trace IDs**: Correlation of logs across different system layers.
+- Pino for structured logs. Logs include request context (user, request id, farmId) when available.
+- Separate log levels for audit (info) and security (warn/error). Persist logs to centralized collector in production.
 
 ## Error Handling Strategy
 
-- Standardized error response format for APIs.
-- Custom domain exceptions for specific business logic failures.
+- API routes use a centralized error middleware that maps errors to HTTP codes and formats responses as `{ error: { code, message, details? } }`.
+- Services throw domain-specific errors for policy violations and validation failures.
 
 ## Testing Strategy
 
-- **Unit**: Individual services and logic.
-- **Integration**: API endpoints and database interactions.
-- **E2E**: Critical user journeys using Playwright.
+- Unit tests for services and repositories with mocked DB.
+- Integration tests run against a disposable test DB (Docker/Neon ephemeral).
+- Contract tests validate API responses and schemas.
+- E2E tests cover critical user flows with seeded fixtures.
 
 ## Scalability Considerations
 
-- Stateless API design for horizontal scaling.
-- Database connection pooling for high-concurrency serverless environments.
-- Materialized views for complex analytics queries.
+- Read scaling: read replicas for analytics workloads, separate analytics DB if needed.
+- Write scaling: partition weather_snapshots by time or move to a dedicated timeseries store.
+- Background processing: migrate heavy jobs to dedicated workers and queue system (e.g., BullMQ or Temporal).
 
 ## Tradeoffs
 
-- **Next.js Modular Monolith**: High developer velocity but requires discipline to maintain module boundaries.
-- **Serverless**: Cost-effective and scalable but introduces cold-start considerations.
+- Monolith (feature-first) reduces operational complexity and accelerates development, at the cost of requiring careful modularization as the app grows.
+- Using Next.js API routes simplifies deployment to Vercel but can be limited for heavy background work.
 
 ## Future Evolution
 
-- Transition to event-driven architecture for real-time alerts.
-- Integration with more IoT sensor providers.
-- Advanced AI models for yield prediction.
+- Introduce an event bus (Kafka or Pulsar) for async integrations and decoupling.
+- Move time-series retention to TimescaleDB or a purpose-built TSDB for scaling.
+
+## Diagrams
+
+```mermaid
+flowchart LR
+  User[User] -->|UI| Frontend[Next.js Frontend]
+  Frontend -->|REST| API[API Routes]
+  API --> Service[Service Layer]
+  Service --> Repo[Repository (Drizzle)]
+  Repo --> Postgres[(PostgreSQL)]
+
+  Farm --> Weather
+  Weather -->|snapshots| AlertRules
+  AlertRules -->|create| AlertEvents
+
+  subgraph Background
+    Scheduler[Vercel Cron / Scheduler] --> Ingest[Snapshot Ingestion]
+    Ingest --> Repo
+    Scheduler --> Analytics[Analytics Jobs]
+  end
+```
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant F as Frontend
+  participant A as API
+  participant S as Service
+  participant R as Repo
+  U->>F: open dashboard
+  F->>A: GET /api/farms/:id/analytics
+  A->>S: authorize + get analytics
+  S->>R: select aggregated analytics
+  R-->>S: analytics
+  S-->>A: return data
+  A-->>F: 200 OK
+  F-->>U: render
+```
