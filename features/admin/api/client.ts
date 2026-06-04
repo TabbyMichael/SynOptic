@@ -1,0 +1,59 @@
+export async function fetchAdminUsers({ limit = 20, offset = 0, search = '' } = {}) {
+  const url = `/api/admin/users?limit=${limit}&offset=${offset}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+  const res = await fetch(url, {
+    headers: {
+      'x-user-id': (typeof window !== 'undefined' && (window as any).__TEST_USER_ID) || '',
+      'x-user-role': (typeof window !== 'undefined' && (window as any).__TEST_USER_ROLE) || 'ADMIN',
+    },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt || 'Failed to fetch admin users');
+  }
+  const payload = await res.json();
+  return payload.data;
+}
+
+export async function fetchAuditLogs({ limit = 50, offset = 0, userId, action, from, to } = {}) {
+  const params = new URLSearchParams();
+  params.set('limit', String(limit));
+  params.set('offset', String(offset));
+  if (userId) params.set('userId', userId);
+  if (action) params.set('action', action);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+
+  const res = await fetch(`/api/admin/audit-logs?${params.toString()}`, {
+    headers: {
+      'x-user-id': (typeof window !== 'undefined' && (window as any).__TEST_USER_ID) || '',
+      'x-user-role': (typeof window !== 'undefined' && (window as any).__TEST_USER_ROLE) || 'ADMIN',
+    },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt || 'Failed to fetch audit logs');
+  }
+  return (await res.json()).data;
+}
+
+export async function fetchSystemMetrics() {
+  const res = await fetch('/api/admin/system-metrics', {
+    headers: {
+      'x-user-id': (typeof window !== 'undefined' && (window as any).__TEST_USER_ID) || '',
+      'x-user-role': (typeof window !== 'undefined' && (window as any).__TEST_USER_ROLE) || 'ADMIN',
+    },
+  });
+  if (!res.ok) throw new Error('Failed to fetch system metrics');
+  return (await res.json()).data;
+}
+
+export async function fetchApiUsage() {
+  const res = await fetch('/api/admin/api-usage', {
+    headers: {
+      'x-user-id': (typeof window !== 'undefined' && (window as any).__TEST_USER_ID) || '',
+      'x-user-role': (typeof window !== 'undefined' && (window as any).__TEST_USER_ROLE) || 'ADMIN',
+    },
+  });
+  if (!res.ok) throw new Error('Failed to fetch api usage');
+  return (await res.json()).data;
+}
