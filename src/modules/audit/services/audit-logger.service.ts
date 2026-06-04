@@ -1,5 +1,5 @@
 import { db } from '../../../infrastructure/database/db.service';
-import { auditLogs } from '../../../infrastructure/database/schema';
+import { auditLogs } from '../../../../drizzle/schema';
 import { logger } from '../../../infrastructure/logger/logger.service';
 
 export type AuditAction = 

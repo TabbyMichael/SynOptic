@@ -1,5 +1,5 @@
 import { db } from '../../../infrastructure/database/db.service';
-import { alertRules, alertEvents } from '../../../infrastructure/database/schema';
+import { alertRules, alertEvents } from '../../../../drizzle/schema';
 import { eq, and } from 'drizzle-orm';
 import { auditLogger } from '../../audit/services/audit-logger.service';
 import { logger } from '../../../infrastructure/logger/logger.service';

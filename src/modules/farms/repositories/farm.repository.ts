@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../../../infrastructure/database/db.service';
-import { farms } from '../../../infrastructure/database/schema';
+import { farms } from '../../../../drizzle/schema';
 import { IFarmRepository, Farm, NewFarm } from './farm.repository.interface';
 
 export class FarmRepository implements IFarmRepository {
