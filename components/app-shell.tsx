@@ -10,6 +10,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  console.log('AppShell mounted');
 
   if (!isAuthenticated) return null;
 

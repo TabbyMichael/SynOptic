@@ -4,6 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { userRepository } from '../../repositories/user.repository';
 import { loginService } from '../../modules/auth/services/login.service';
 import { logger } from '../logger/logger.service';
+import { Role } from '@/lib/types';
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   providers: [
@@ -55,7 +56,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
-        session.user.role = (token.role as string) || 'FARMER';
+        session.user.role = (token.role as Role) || 'FARMER';
       }
       return session;
     },

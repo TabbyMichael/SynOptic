@@ -24,8 +24,7 @@ export class RefreshService {
     const dbToken = await this.tokenRepo.findByTokenHash(tokenHash);
 
     if (!dbToken || dbToken.revoked || (dbToken.expiresAt && dbToken.expiresAt < new Date())) {
-      // If token is found but revoked, it might be a reuse attack
-      if (dbToken && dbToken.revoked) {
+      if (dbToken && dbToken.revoked && dbToken.sessionId) {
         logger.warn({ sessionId: dbToken.sessionId, userId: dbToken.userId }, 'refresh_token_reuse_detected');
         await this.sessionRepo.revoke(dbToken.sessionId);
       }

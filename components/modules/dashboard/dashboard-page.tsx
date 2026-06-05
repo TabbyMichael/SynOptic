@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Heart, Cloud, Bell, Activity, Zap, Thermometer, Wind, Droplets } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MetricCard, PageHeader, ChartCard, LoadingSkeleton, ErrorState } from '@/components/shared';
+import { MetricCard, LoadingSkeleton, ErrorState } from '@/components/shared';
 import { mockHealthTrend, mockWeatherTrend, mockRecentActivity } from '@/lib/mock-data';
 import { PageHeader } from '@/components/shared';
 import { WeatherHeroCard } from './widgets/weather-hero-card';
@@ -17,10 +17,71 @@ import { WeatherAlertsPanel } from './widgets/weather-alerts-panel';
 import { APIUsageWidget } from './widgets/api-usage-widget';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { format } from 'date-fns';
-import { LoadingSkeleton } from '@/components/shared';
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboardData();
+
+  // Resilient Mappers
+  const weather = data?.weather;
+  const weatherData = weather ? {
+    location: weather.location?.name || 'Nairobi, Kenya',
+    temp: weather.current?.temperature ?? weather.temp ?? '--',
+    condition: (weather.current?.condition_code || weather.condition || 'Clear').charAt(0).toUpperCase() + (weather.current?.condition_code || weather.condition || 'Clear').slice(1),
+    lastUpdated: data.timestamp ? format(new Date(data.timestamp), 'h:mm a') : 'Just now',
+    humidity: weather.current?.humidity ?? weather.humidity ?? 0,
+    windSpeed: weather.current?.wind_speed ?? weather.wind_speed ?? 0,
+    rainChance: data.forecast?.daily?.[0]?.precipitation_probability || weather.rain || 0,
+    feelsLike: weather.current?.feels_like ?? weather.feels_like ?? '--',
+  } : {
+    location: 'Nairobi, Kenya',
+    temp: 24,
+    condition: 'Sunny',
+    lastUpdated: 'Just now',
+    humidity: 62,
+    windSpeed: 12,
+    rainChance: 15,
+    feelsLike: 26,
+  };
+
+  const defaultForecast = [
+    { day: 'Mon', icon: '☀️', high: 24, low: 18, rainChance: 5 },
+    { day: 'Tue', icon: '🌤️', high: 23, low: 17, rainChance: 10 },
+    { day: 'Wed', icon: '🌧️', high: 20, low: 16, rainChance: 80 },
+    { day: 'Thu', icon: '🌦️', high: 21, low: 16, rainChance: 40 },
+    { day: 'Fri', icon: '☀️', high: 25, low: 18, rainChance: 10 },
+    { day: 'Sat', icon: '☀️', high: 27, low: 19, rainChance: 5 },
+    { day: 'Sun', icon: '🌤️', high: 26, low: 18, rainChance: 15 },
+  ];
+
+  const defaultAnalytics = [
+    { day: 'Mon', temp: 22 }, { day: 'Tue', temp: 23 }, { day: 'Wed', temp: 20 },
+    { day: 'Thu', temp: 21 }, { day: 'Fri', temp: 24 }, { day: 'Sat', temp: 26 }, { day: 'Sun', temp: 25 },
+  ];
+
+  const forecastData = (data?.forecast?.daily && data.forecast.daily.length > 0) 
+    ? data.forecast.daily.map((day: any) => ({
+        day: format(new Date(day.date), 'EEE'),
+        icon: day.icon || '☀️',
+        high: day.temp_max,
+        low: day.temp_min,
+        rainChance: day.precipitation_probability,
+      }))
+    : defaultForecast;
+
+  const usageData = data?.usage ? {
+    remaining: data.usage.requests_remaining,
+    total: (data.usage.requests_used || 0) + (data.usage.requests_remaining || 0),
+  } : { remaining: 948, total: 1000 };
+
+  const alertsData = (data?.alerts && data.alerts.length > 0)
+    ? data.alerts.map((alert: any) => ({
+        message: alert.message || `Rule ${alert.ruleId?.split('-')[0]} Threshold Exceeded`,
+        severity: alert.severity || (alert.status === 'OPEN' ? 'High' : 'Low'),
+      }))
+    : [
+        { message: 'Potential Frost Risk Detected', severity: 'Medium' },
+        { message: 'Low Soil Moisture Warning', severity: 'High' }
+      ];
 
   if (isLoading) {
     return (
@@ -51,81 +112,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  // High-quality fallbacks for a beautiful "out of the box" experience
-  const defaultForecast = [
-    { day: 'Mon', icon: '☀️', high: 24, low: 18, rainChance: 5 },
-    { day: 'Tue', icon: '🌤️', high: 23, low: 17, rainChance: 10 },
-    { day: 'Wed', icon: '🌧️', high: 20, low: 16, rainChance: 80 },
-    { day: 'Thu', icon: '🌦️', high: 21, low: 16, rainChance: 40 },
-    { day: 'Fri', icon: '☀️', high: 25, low: 18, rainChance: 10 },
-    { day: 'Sat', icon: '☀️', high: 27, low: 19, rainChance: 5 },
-    { day: 'Sun', icon: '🌤️', high: 26, low: 18, rainChance: 15 },
-  ];
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <PageHeader 
-        title="Weather Intelligence Dashboard" 
-        description="Powered by WeatherAI real-time weather analytics."
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard title="Current Temp" value="24°C" icon={<Thermometer className="w-5 h-5 text-orange-500" />} />
-        <MetricCard title="Humidity" value="62%" icon={<Droplets className="w-5 h-5 text-sky-500" />} />
-        <MetricCard title="Wind Speed" value="12 km/h" icon={<Wind className="w-5 h-5 text-emerald-500" />} />
-        <MetricCard title="WeatherAI Status" value="Active" icon={<Zap className="w-5 h-5 text-purple-500" />} />
-  const defaultAnalytics = [
-    { day: 'Mon', temp: 22 }, { day: 'Tue', temp: 23 }, { day: 'Wed', temp: 20 },
-    { day: 'Thu', temp: 21 }, { day: 'Fri', temp: 24 }, { day: 'Sat', temp: 26 }, { day: 'Sun', temp: 25 },
-  ];
-
-  // Resilient Mappers
-  const weather = data?.weather;
-  const weatherData = weather ? {
-    location: weather.location?.name || 'Nairobi, Kenya',
-    temp: weather.current?.temperature ?? weather.temp ?? '--',
-    condition: (weather.current?.condition_code || weather.condition || 'Clear').charAt(0).toUpperCase() + (weather.current?.condition_code || weather.condition || 'Clear').slice(1),
-    lastUpdated: data.timestamp ? format(new Date(data.timestamp), 'h:mm a') : 'Just now',
-    humidity: weather.current?.humidity ?? weather.humidity ?? 0,
-    windSpeed: weather.current?.wind_speed ?? weather.wind_speed ?? 0,
-    rainChance: data.forecast?.daily?.[0]?.precipitation_probability || weather.rain || 0,
-    feelsLike: weather.current?.feels_like ?? weather.feels_like ?? '--',
-  } : {
-    location: 'Nairobi, Kenya',
-    temp: 24,
-    condition: 'Sunny',
-    lastUpdated: 'Just now',
-    humidity: 62,
-    windSpeed: 12,
-    rainChance: 15,
-    feelsLike: 26,
-  };
-
-  const forecastData = (data?.forecast?.daily && data.forecast.daily.length > 0) 
-    ? data.forecast.daily.map((day: any) => ({
-        day: format(new Date(day.date), 'EEE'),
-        icon: day.icon || '☀️',
-        high: day.temp_max,
-        low: day.temp_min,
-        rainChance: day.precipitation_probability,
-      }))
-    : defaultForecast;
-
-  const usageData = data?.usage ? {
-    remaining: data.usage.requests_remaining,
-    total: (data.usage.requests_used || 0) + (data.usage.requests_remaining || 0),
-  } : { remaining: 948, total: 1000 };
-
-  const alertsData = (data?.alerts && data.alerts.length > 0)
-    ? data.alerts.map((alert: any) => ({
-        message: alert.message || `Rule ${alert.ruleId?.split('-')[0]} Threshold Exceeded`,
-        severity: alert.severity || (alert.status === 'OPEN' ? 'High' : 'Low'),
-      }))
-    : [
-        { message: 'Potential Frost Risk Detected', severity: 'Medium' },
-        { message: 'Low Soil Moisture Warning', severity: 'High' }
-      ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-[1600px] mx-auto pb-12">
