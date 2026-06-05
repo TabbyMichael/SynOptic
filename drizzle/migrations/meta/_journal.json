@@ -15,6 +15,13 @@
       "when": 1780597352780,
       "tag": "0001_natural_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780649413744,
+      "tag": "0002_sad_mole_man",
+      "breakpoints": true
     }
   ]
 }

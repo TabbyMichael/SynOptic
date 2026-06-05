@@ -28,10 +28,11 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
     setMounted(true);
   }, []);
 
-  const initials = user?.name
+  const initials = (user?.name || 'User')
     .split(' ')
     .map((n) => n[0])
-    .join('') ?? 'U';
+    .join('')
+    .toUpperCase() || 'U';
 
   if (!mounted) {
     return (
