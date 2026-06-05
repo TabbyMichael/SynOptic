@@ -12,6 +12,7 @@ import type { User, Role } from '@/lib/types';
 interface AuthContextValue {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
   logout: () => void;
   switchRole: (role: Role) => void;
   isAuthenticated: boolean;
@@ -52,6 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
+  const loginWithGoogle = useCallback(async () => {
+    // Simulate Google Sign-in flow
+    setUser(MOCK_USERS.FARMER);
+    return true;
+  }, []);
+
   const logout = useCallback(() => setUser(null), []);
 
   const switchRole = useCallback((role: Role) => {
@@ -60,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, switchRole, isAuthenticated: !!user }}
+      value={{ user, login, loginWithGoogle, logout, switchRole, isAuthenticated: !!user }}
     >
       {children}
     </AuthContext.Provider>
