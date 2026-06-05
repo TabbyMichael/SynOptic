@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/lib/providers/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +23,9 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
   const router = useRouter();
+  const { loginWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<SignupFormValues>({
@@ -38,6 +41,23 @@ export function SignupForm() {
     router.push('/dashboard');
   };
 
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const success = await loginWithGoogle();
+      if (success) {
+        router.push('/dashboard');
+      } else {
+        setError('Google sign-in failed. Please try again.');
+      }
+    } catch {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md shadow-lg border-0 shadow-emerald-100/50 dark:shadow-emerald-950/20">
       <CardHeader className="text-center space-y-2 pb-2">
@@ -48,6 +68,18 @@ export function SignupForm() {
         <CardDescription>Get started with {APP_NAME}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignup} disabled={loading}>
+          <img src="/Logos/google.png" alt="Google Logo" className="mr-2 h-4 w-4" />
+          Sign up with Google
+        </Button>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+          </div>
+        </div>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
@@ -75,6 +107,9 @@ export function SignupForm() {
                 </button>
             </div>
           </div>
+          {error && (
+              <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating account...' : 'Sign up'}
           </Button>

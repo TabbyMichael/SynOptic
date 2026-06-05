@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { fetchSessions, revokeSession, revokeAllSessions } from '../api/sessions'
 
 export function useSessions(limit = 20, offset = 0) {
   return useQuery({
     queryKey: ['sessions', { limit, offset }],
     queryFn: () => fetchSessions(limit, offset),
-    placeholderData: (previousData: any) => previousData,
+    placeholderData: keepPreviousData,
   })
 }
 

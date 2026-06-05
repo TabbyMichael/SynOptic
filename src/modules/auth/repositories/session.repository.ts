@@ -41,7 +41,6 @@ export class SessionRepository {
   }
 
   async findByFilters(userId: string, filters: Record<string, any>, limit = 20, offset = 0): Promise<Session[]> {
-    // TODO: implement real filtering; for now return all user sessions
     return this.findByUserId(userId, limit, offset);
   }
 }

@@ -1,5 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { Heart, Cloud, Bell, Activity, Zap, Thermometer, Wind, Droplets } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MetricCard, PageHeader, ChartCard, LoadingSkeleton, ErrorState } from '@/components/shared';
+import { mockHealthTrend, mockWeatherTrend, mockRecentActivity } from '@/lib/mock-data';
 import { PageHeader } from '@/components/shared';
 import { WeatherHeroCard } from './widgets/weather-hero-card';
 import { WeatherAIInsightCard } from './widgets/weather-ai-insight-card';
@@ -57,6 +63,18 @@ export default function DashboardPage() {
     { day: 'Sun', icon: '🌤️', high: 26, low: 18, rainChance: 15 },
   ];
 
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Weather Intelligence Dashboard" 
+        description="Powered by WeatherAI real-time weather analytics."
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard title="Current Temp" value="24°C" icon={<Thermometer className="w-5 h-5 text-orange-500" />} />
+        <MetricCard title="Humidity" value="62%" icon={<Droplets className="w-5 h-5 text-sky-500" />} />
+        <MetricCard title="Wind Speed" value="12 km/h" icon={<Wind className="w-5 h-5 text-emerald-500" />} />
+        <MetricCard title="WeatherAI Status" value="Active" icon={<Zap className="w-5 h-5 text-purple-500" />} />
   const defaultAnalytics = [
     { day: 'Mon', temp: 22 }, { day: 'Tue', temp: 23 }, { day: 'Wed', temp: 20 },
     { day: 'Thu', temp: 21 }, { day: 'Fri', temp: 24 }, { day: 'Sat', temp: 26 }, { day: 'Sun', temp: 25 },

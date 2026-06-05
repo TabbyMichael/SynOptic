@@ -1,6 +1,6 @@
 import { Pool } from 'pg'
 import logger from '../../lib/logger'
-import type { ICacheProvider, ICacheMetadata } from './CacheProvider'
+import ICacheProvider, { ICacheMetadata } from './CacheProvider'
 import { CacheUnavailableError } from './CacheErrors'
 
 const DEFAULT_TABLE = 'cache_entries'

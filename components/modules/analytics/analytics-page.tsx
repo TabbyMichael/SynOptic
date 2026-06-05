@@ -1,28 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  ComposedChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import { PageHeader, ChartCard, MetricCard, LoadingSkeleton } from '@/components/shared';
-import {
-  mockHealthTrend,
-  mockWeatherTrend,
-  mockAlertFrequency,
-  mockAnalysisHistory,
-} from '@/lib/mock-data';
+import { PageHeader, MetricCard, LoadingSkeleton } from '@/components/shared';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Zap, Database, AlertCircle, Clock } from 'lucide-react';
 
 export function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -35,129 +16,54 @@ export function AnalyticsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Analytics" description="Historical data and trends across your farms" />
-        <LoadingSkeleton type="chart" count={4} />
+        <PageHeader title="WeatherAI Usage Analytics" />
         <LoadingSkeleton type="card" count={4} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
-        title="Analytics"
-        description="Historical data and trends across your farms"
+        title="WeatherAI Usage Analytics"
+        description="Monitor your WeatherAI API consumption and quota status."
       />
 
-      {/* Charts Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Farm Health Trend */}
-        <ChartCard title="Farm Health Trend">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={mockHealthTrend}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="greenValley"
-                stroke="#16a34a"
-                dot={false}
-                name="Green Valley"
-              />
-              <Line
-                type="monotone"
-                dataKey="sunrise"
-                stroke="#2563eb"
-                dot={false}
-                name="Sunrise"
-              />
-              <Line
-                type="monotone"
-                dataKey="riftView"
-                stroke="#dc2626"
-                dot={false}
-                name="Rift View"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* Weather Trend */}
-        <ChartCard title="Weather Trend">
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={mockWeatherTrend}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="temp"
-                stroke="#dc2626"
-                dot={false}
-                name="Temperature (°C)"
-              />
-              <Bar yAxisId="right" dataKey="rain" fill="#2563eb" name="Rain (mm)" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* Alert Frequency */}
-        <ChartCard title="Alert Frequency">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={mockAlertFrequency}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="critical" stackId="a" fill="#dc2626" name="Critical" />
-              <Bar dataKey="high" stackId="a" fill="#ea580c" name="High" />
-              <Bar dataKey="medium" stackId="a" fill="#d97706" name="Medium" />
-              <Bar dataKey="low" stackId="a" fill="#2563eb" name="Low" />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* Analysis History */}
-        <ChartCard title="Analysis History">
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={mockAnalysisHistory}>
-              <defs>
-                <linearGradient id="colorAnalyses" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#16a34a" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="analyses"
-                stroke="#16a34a"
-                fillOpacity={1}
-                fill="url(#colorAnalyses)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-
-      {/* Summary Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Average Health Score" value="67" />
-        <MetricCard title="Rainy Days This Week" value="3" />
-        <MetricCard title="Total Alerts (30d)" value="42" />
-        <MetricCard title="Analyses Completed" value="47" />
+        <MetricCard title="API Requests (Today)" value="1,248" icon={<Zap className="w-5 h-5 text-purple-500" />} />
+        <MetricCard title="Remaining Quota" value="87,552" icon={<Database className="w-5 h-5 text-blue-500" />} />
+        <MetricCard title="AI Analysis Calls" value="342" icon={<Database className="w-5 h-5 text-emerald-500" />} />
+        <MetricCard title="Avg Latency" value="142ms" icon={<Clock className="w-5 h-5 text-orange-500" />} />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quota Usage Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Monthly API Request Usage</span>
+                <span className="font-medium">12,448 / 100,000</span>
+              </div>
+              <div className="h-4 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full bg-purple-600" style={{ width: '12.4%' }} />
+              </div>
+            </div>
+            <p className="text-sm text-slate-500">You have used 12.4% of your monthly WeatherAI API quota.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent API Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-slate-500">No API errors detected in the last 24 hours. Service health is optimal.</div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

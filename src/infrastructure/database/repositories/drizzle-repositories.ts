@@ -10,8 +10,8 @@ import {
   SessionRepository, RefreshTokenRepository,
   User, NewUser, Farm, NewFarm, Analysis, NewAnalysis,
   WeatherSnapshot, NewWeatherSnapshot, AlertRule, NewAlertRule,
-  AlertEvent, NewAlertEvent, AuditLog, NewAuditLog
-  , Session, NewSession, RefreshToken, NewRefreshToken
+  AlertEvent, NewAlertEvent, AuditLog, NewAuditLog,
+  Session, NewSession, RefreshToken, NewRefreshToken
 } from './interfaces';
 
 export class DrizzleUserRepository implements UserRepository {

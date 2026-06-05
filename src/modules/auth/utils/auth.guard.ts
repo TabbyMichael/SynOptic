@@ -1,28 +1,38 @@
-import { NextRequest } from 'next/server'
-import { UnauthorizedError } from '@/shared/errors/domain-errors'
+import { NextRequest } from 'next/server';
+import { auth } from '@/src/infrastructure/auth/auth.config';
+import { JwtUtils } from './jwt';
 
 export interface AuthContext {
-  userId: string
-  role: string
+  userId: string;
+  role: string;
+  sid: string;
 }
 
-/**
- * Lightweight authentication guard used in API routes until app-wide auth is integrated.
- * In production, replace this with proper JWT/NextAuth session extraction.
- */
-export function getAuthFromRequest(req: Request | NextRequest): AuthContext {
-  // Prefer headers set by reverse proxy or middleware
-  const headers: any = (req as any).headers || (typeof req === 'object' && (req as any).headers) || {}
-  // Node fetch Request uses get() method
-  const getHeader = (name: string) => {
-    if (typeof headers.get === 'function') return headers.get(name)
-    return headers[name] || headers[name.toLowerCase()]
+export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
+  // 1. Try NextAuth session
+  const session = await auth();
+  if (session?.user?.id) {
+    return {
+      userId: session.user.id,
+      role: (session.user as any).role || 'FARMER',
+      sid: '', // NextAuth doesn't expose sid easily in session by default here
+    };
   }
 
-  const userId = getHeader('x-user-id') || getHeader('x-user')
-  const role = getHeader('x-user-role') || 'FARMER'
-  if (!userId) throw new UnauthorizedError('Missing authentication')
-  return { userId, role }
-}
+  // 2. Try JWT from cookies
+  const accessToken = req.cookies.get('accessToken')?.value;
+  if (accessToken) {
+    try {
+      const payload = JwtUtils.verifyAccessToken(accessToken);
+      return {
+        userId: payload.sub,
+        role: payload.role,
+        sid: payload.sid,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
 
-export default getAuthFromRequest
+  return null;
+}

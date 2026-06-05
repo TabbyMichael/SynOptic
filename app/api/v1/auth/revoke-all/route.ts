@@ -1,16 +1,20 @@
-import { NextResponse } from 'next/server';
-import { getAuthFromRequest } from '@/modules/auth/utils/auth.guard';
-import { revokeAllSessionsService } from '@/modules/auth/services/revokeAllSessions.service';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthContext } from '@/src/modules/auth/utils/auth.guard';
+import { revokeAllSessionsService } from '@/src/modules/auth/services/revokeAllSessions.service';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { userId } = getAuthFromRequest(req as any);
+    const auth = await getAuthContext(req);
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const body = await req.json().catch(() => ({}));
-    const exceptSessionId = body.exceptSessionId as string | undefined;
-    const count = await revokeAllSessionsService.revokeAll(userId, exceptSessionId);
+    // Prefer the sid from auth context as the one to keep
+    const exceptSessionId = auth.sid || body.exceptSessionId as string | undefined;
+    
+    const count = await revokeAllSessionsService.revokeAll(auth.userId, exceptSessionId);
     return NextResponse.json({ success: true, revoked: count });
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 401 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 

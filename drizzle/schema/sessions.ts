@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean, jsonb, index } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const sessions = pgTable('sessions', {
@@ -17,6 +17,8 @@ export const sessions = pgTable('sessions', {
   expiresAt: timestamp('expires_at'),
   revoked: boolean('revoked').default(false).notNull(),
   revokedAt: timestamp('revoked_at'),
-});
+}, (table) => ({
+  userIdIdx: index('session_user_id_idx').on(table.userId),
+}));
 
 export type Session = typeof sessions.$inferSelect;

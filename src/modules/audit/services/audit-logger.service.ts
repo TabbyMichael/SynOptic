@@ -9,10 +9,12 @@ export type AuditAction =
   | 'ALERT_CREATED'
   | 'ALERT_TRIGGERED'
   | 'LOGIN_SUCCESS'
-  | 'ADMIN_LIST_USERS'
   | 'SESSION_CREATED'
+  | 'USER_REGISTERED'
+  | 'SESSION_REVOKED'
   | 'SESSION_REVOKED_ALL'
-  | 'SESSION_REVOKED';
+  | 'ADMIN_LIST_USERS';
+
 export interface AuditLogPayload {
   userId?: string;
   action: AuditAction;

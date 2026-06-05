@@ -24,25 +24,26 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const MOCK_USERS: Record<Role, User> = {
-  ADMIN: {
-    id: 'usr-admin-1',
-    email: 'admin@agroinsight.ai',
-    name: 'Sarah Mwangi',
-    role: 'ADMIN',
-    createdAt: '2024-01-15T08:00:00Z',
-  },
-  FARMER: {
-    id: 'usr-farmer-1',
-    email: 'farmer@agroinsight.ai',
-    name: 'James Ochieng',
-    role: 'FARMER',
-    createdAt: '2024-03-22T10:30:00Z',
-  },
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          name: firebaseUser.displayName || '',
+          role: 'FARMER',
+          createdAt: new Date().toISOString(),
+        });
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+  }, []);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -65,19 +66,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, _password: string) => {
-    if (email === MOCK_USERS.ADMIN.email) {
-      setUser(MOCK_USERS.ADMIN);
-      return true;
-    }
-    if (email === MOCK_USERS.FARMER.email) {
-      setUser(MOCK_USERS.FARMER);
-      return true;
-    }
-    setUser(MOCK_USERS.FARMER);
-    return true;
+    return false;
   }, []);
 
   const loginWithGoogle = useCallback(async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      return true;
+    } catch (error) {
+      console.error('Error signing in with Google', error);
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -90,18 +88,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const logout = useCallback(() => auth.signOut(), []);
   const logout = useCallback(async () => {
     await auth.signOut();
   }, []);
 
-  const switchRole = useCallback((role: Role) => {
-    setUser(MOCK_USERS[role]);
-  }, []);
+  const switchRole = useCallback((role: Role) => {}, []);
 
   return (
     <AuthContext.Provider
       value={{ user, login, loginWithGoogle, logout, switchRole, isAuthenticated: !!user, isLoading }}
     >
+      {!isLoading && children}
       {isLoading ? (
         <div className="flex items-center justify-center min-h-screen bg-background">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>

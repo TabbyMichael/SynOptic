@@ -1,6 +1,7 @@
 import { logger } from '../logger/logger.service';
 import { WeatherAiCurrentResponse, WeatherAiForecastResponse, WeatherAiUsageResponse, WeatherAiForestryResponse } from './weather-ai.types';
 import { WeatherUnavailableError, AnalysisFailedError } from '../../shared/errors/domain-errors';
+import { redisClient } from '../cache/redis.client';
 import { cacheManager } from '../cache/cache.service';
 import { CachePolicies } from '../cache/CachePolicies';
 
@@ -8,6 +9,16 @@ export class WeatherAiClient {
   private readonly baseUrl = process.env.WEATHER_AI_BASE_URL || 'https://api.weather-ai.co';
   private readonly apiKey = process.env.WEATHER_AI_API_KEY;
 
+  async getCurrentWeather(lat: number, lon: number): Promise<WeatherAiCurrentResponse> {
+    const path = `/weather/current?lat=${lat}&lon=${lon}`;
+    const cacheKey = `weather:${path}`;
+    
+    const cached = await redisClient.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+
+    const data = await this.fetch<WeatherAiCurrentResponse>(path);
+    await redisClient.set(cacheKey, JSON.stringify(data), 'EX', 300);
+    return data;
   private isMockMode(): boolean {
     return !this.apiKey || this.apiKey === 'your-weatherai-key' || this.apiKey.includes('your-');
   }
@@ -121,6 +132,11 @@ export class WeatherAiClient {
       
       if (retries > 0) {
         logger.warn({ msg: 'WeatherAI network error retry', url, error, retriesLeft: retries });
+        await new Promise(r => setTimeout(r, backoff));
+        return this.fetch(path, init, retries - 1, backoff * 2);
+      }
+      
+      if (retries > 0) {
         await new Promise(r => setTimeout(r, backoff));
         return this.fetch(path, init, retries - 1, backoff * 2);
       }
