@@ -49,6 +49,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const pathname = usePathname();
   const { user } = useAuth();
   const items = user ? NAV_ITEMS[user.role] : NAV_ITEMS.FARMER;
+  console.log('Sidebar items:', items);
 
   return (
     <TooltipProvider delayDuration={0}>

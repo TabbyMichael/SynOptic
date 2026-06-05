@@ -9,16 +9,6 @@ export class WeatherAiClient {
   private readonly baseUrl = process.env.WEATHER_AI_BASE_URL || 'https://api.weather-ai.co';
   private readonly apiKey = process.env.WEATHER_AI_API_KEY;
 
-  async getCurrentWeather(lat: number, lon: number): Promise<WeatherAiCurrentResponse> {
-    const path = `/weather/current?lat=${lat}&lon=${lon}`;
-    const cacheKey = `weather:${path}`;
-    
-    const cached = await redisClient.get(cacheKey);
-    if (cached) return JSON.parse(cached);
-
-    const data = await this.fetch<WeatherAiCurrentResponse>(path);
-    await redisClient.set(cacheKey, JSON.stringify(data), 'EX', 300);
-    return data;
   private isMockMode(): boolean {
     return !this.apiKey || this.apiKey === 'your-weatherai-key' || this.apiKey.includes('your-');
   }
