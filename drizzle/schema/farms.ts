@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, doublePrecision } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, doublePrecision, index } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const farms = pgTable('farms', {
@@ -12,4 +12,6 @@ export const farms = pgTable('farms', {
   status: text('status').default('ACTIVE').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  ownerIdIdx: index('farm_owner_id_idx').on(table.ownerId),
+}));

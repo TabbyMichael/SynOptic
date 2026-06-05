@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Heart, Cloud, Bell, Activity } from 'lucide-react';
+import { Heart, Cloud, Bell, Activity, Zap, Thermometer, Wind, Droplets } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MetricCard, PageHeader, ChartCard, LoadingSkeleton, ErrorState } from '@/components/shared';
@@ -34,14 +34,17 @@ export default function DashboardPage() {
   if (error) return <ErrorState message={error} />;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Dashboard" />
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Weather Intelligence Dashboard" 
+        description="Powered by WeatherAI real-time weather analytics."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard title="Farm Health Score" value="87%" change={3} changeLabel="vs last month" icon={<Heart className="w-5 h-5 text-emerald-600" />} />
-        <MetricCard title="Weather Risk" value="Low" icon={<Cloud className="w-5 h-5 text-sky-600" />} />
-        <MetricCard title="Active Alerts" value={2} change={-1} changeLabel="vs last week" icon={<Bell className="w-5 h-5 text-amber-600" />} />
-        <MetricCard title="Latest Analysis" value="2h ago" icon={<Activity className="w-5 h-5 text-slate-600" />} />
+        <MetricCard title="Current Temp" value="24°C" icon={<Thermometer className="w-5 h-5 text-orange-500" />} />
+        <MetricCard title="Humidity" value="62%" icon={<Droplets className="w-5 h-5 text-sky-500" />} />
+        <MetricCard title="Wind Speed" value="12 km/h" icon={<Wind className="w-5 h-5 text-emerald-500" />} />
+        <MetricCard title="WeatherAI Status" value="Active" icon={<Zap className="w-5 h-5 text-purple-500" />} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

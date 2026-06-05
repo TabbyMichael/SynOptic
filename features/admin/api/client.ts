@@ -1,4 +1,10 @@
-export async function fetchAdminUsers({ limit = 20, offset = 0, search = '' } = {}) {
+interface FetchAdminUsersOptions {
+  limit?: number;
+  offset?: number;
+  search?: string;
+}
+
+export async function fetchAdminUsers({ limit = 20, offset = 0, search = '' }: FetchAdminUsersOptions = {}) {
   const url = `/api/admin/users?limit=${limit}&offset=${offset}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
   const res = await fetch(url, {
     headers: {
@@ -14,7 +20,16 @@ export async function fetchAdminUsers({ limit = 20, offset = 0, search = '' } = 
   return payload.data;
 }
 
-export async function fetchAuditLogs({ limit = 50, offset = 0, userId, action, from, to } = {}) {
+interface FetchAuditLogsOptions {
+  limit?: number;
+  offset?: number;
+  userId?: string;
+  action?: string;
+  from?: string;
+  to?: string;
+}
+
+export async function fetchAuditLogs({ limit = 50, offset = 0, userId, action, from, to }: FetchAuditLogsOptions = {}) {
   const params = new URLSearchParams();
   params.set('limit', String(limit));
   params.set('offset', String(offset));
