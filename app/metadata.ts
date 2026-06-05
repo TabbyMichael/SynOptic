@@ -71,10 +71,17 @@ export const DEFAULT_METADATA: Metadata = {
     images: ['/twitter-image.png'],
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/icon.png',
-    apple: '/apple-icon.png',
-    other: [{ rel: 'manifest', url: '/manifest.json' }],
+    icon: [
+      { url: '/favicons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicons/favicon.ico', sizes: 'any' },
+    ],
+    apple: [{ url: '/favicons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    other: [
+      { rel: 'android-chrome-192x192', url: '/favicons/android-chrome-192x192.png' },
+      { rel: 'android-chrome-512x512', url: '/favicons/android-chrome-512x512.png' },
+      { rel: 'manifest', url: '/manifest.json' },
+    ],
   },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
@@ -200,7 +207,6 @@ export async function generateSettingsMetadata(): Promise<Metadata> {
     keywords: ['settings', 'preferences', 'api keys'],
   });
 }
-
 export async function generateAuthMetadata(pageTitle = 'Sign in'): Promise<Metadata> {
   return createPageMetadata({
     title: pageTitle,

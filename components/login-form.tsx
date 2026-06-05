@@ -27,7 +27,7 @@ const demoAccounts = [
 
 export function LoginForm() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,6 +51,19 @@ export function LoginForm() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await loginWithGoogle();
+      router.push('/dashboard');
+    } catch {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDemoLogin = async (email: string) => {
     setLoading(true);
     setError('');
@@ -65,8 +78,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-emerald-950 px-4">
-      <Card className="w-full max-w-md shadow-lg border-0 shadow-emerald-100/50 dark:shadow-emerald-950/20">
+    <Card className="w-full max-w-md shadow-lg border-0 shadow-emerald-100/50 dark:shadow-emerald-950/20">
         <CardHeader className="text-center space-y-2 pb-2">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
             <Leaf className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -76,6 +88,18 @@ export function LoginForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <Button type="button" variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading}>
+              <img src="/Logos/google.png" alt="Google Logo" className="mr-2 h-4 w-4" />
+              Sign in with Google
+            </Button>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -91,7 +115,12 @@ export function LoginForm() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <a href="/auth/reset-password" className="text-sm text-emerald-600 hover:underline dark:text-emerald-400">
+                    Forgot password?
+                </a>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
@@ -113,6 +142,7 @@ export function LoginForm() {
                 </p>
               )}
             </div>
+
             {error && (
               <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
             )}
@@ -120,6 +150,12 @@ export function LoginForm() {
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
+          <p className="text-center text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <a href="/auth/signup" className="text-emerald-600 hover:underline dark:text-emerald-400">
+              Sign up
+            </a>
+          </p>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -143,6 +179,5 @@ export function LoginForm() {
           </div>
         </CardContent>
       </Card>
-    </div>
   );
 }
