@@ -9,6 +9,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useWeatherData } from '@/hooks/use-weather-data';
 import { format } from 'date-fns';
 
+interface DailyForecastItem {
+  date: string;
+  temp_max: number;
+  temp_min: number;
+  precipitation_probability: number;
+  wind_speed?: number;
+  condition_code?: string;
+}
+
 export default function WeatherPage() {
   const { data, isLoading, error } = useWeatherData();
 
@@ -48,14 +57,14 @@ export default function WeatherPage() {
     rainProbability: forecast[0]?.precipitation_probability ?? 0,
   } : null;
 
-  const chartData = forecast.map((day: any) => ({
+  const chartData = forecast.map((day: DailyForecastItem) => ({
     date: format(new Date(day.date), 'MMM dd'),
     shortDate: format(new Date(day.date), 'EEE'),
     high: day.temp_max,
     low: day.temp_min,
     rain: day.precipitation_probability,
     wind: day.wind_speed || (Math.random() * 20).toFixed(1), // Fallback if wind missing in forecast
-  }));
+  })) as any[];
 
   const metricCards = [
     { icon: Droplets, label: 'Humidity', value: `${weatherStats?.humidity}%`, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/20' },

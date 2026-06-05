@@ -1,3 +1,5 @@
+import type { RateLimitRule } from './RateLimitPolicy'
+
 export interface RateLimitResult {
   allowed: boolean
   remaining: number
@@ -5,7 +7,7 @@ export interface RateLimitResult {
 }
 
 export interface IRateLimiter {
-  allow(key: string, cost?: number): Promise<RateLimitResult>
+  allow(key: string, cost?: number, rule?: RateLimitRule): Promise<RateLimitResult>
   consume?(key: string, cost?: number): Promise<RateLimitResult>
   reset?(key: string): Promise<void>
   remaining?(key: string): Promise<number>

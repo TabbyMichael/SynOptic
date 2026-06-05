@@ -2,7 +2,7 @@ import { db } from '../../../infrastructure/database/db.service';
 import { auditLogs } from '../../../../drizzle/schema';
 import { logger } from '../../../infrastructure/logger/logger.service';
 
-export type AuditAction = 
+export type AuditAction =
   | 'FARM_CREATED'
   | 'FARM_UPDATED'
   | 'ANALYSIS_COMPLETED'

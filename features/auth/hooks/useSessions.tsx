@@ -32,7 +32,7 @@ export function useRevokeAll() {
     onMutate: async (exceptId) => {
       await qc.cancelQueries({ queryKey: ['sessions'] })
       const previous = qc.getQueryData(['sessions'])
-      qc.setQueryData(['sessions'], { ...previous, data: [] })
+      qc.setQueryData(['sessions'], { ...(previous as any), data: [] })
       return { previous }
     },
     onError: (_err, _vars, context: any) => qc.setQueryData(['sessions'], context.previous),

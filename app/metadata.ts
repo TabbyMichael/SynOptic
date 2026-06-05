@@ -106,7 +106,7 @@ export function createPageMetadata({
   keywords?: string[];
 }): Metadata {
   const pageTitle = `${title} | ${SITE_NAME}`;
-  const pageDescription = description ?? DEFAULT_METADATA.description;
+  const pageDescription = (description ?? DEFAULT_METADATA.description) || undefined;
   const absoluteUrl = path ? `${SITE_URL.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}` : SITE_URL;
 
   return {

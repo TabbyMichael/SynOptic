@@ -15,5 +15,3 @@ export const SpecialRoutes = {
   authLogin: { limit: 5, windowSeconds: 15 * 60 },
   imageUpload: { limit: 20, windowSeconds: 60 * 60 },
 }
-
-export default RateLimitPolicy

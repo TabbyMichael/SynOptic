@@ -10,7 +10,7 @@ export function rateLimitMiddleware(limiter: IRateLimiter, keyFactory: (req: Req
       try {
         const key = keyFactory(req)
         const rule = ruleFactory(req)
-        const result = await limiter.allow(key, 1, rule as any)
+        const result = await limiter.allow(key, 1)
         if (!result.allowed) {
           const retry = result.resetSeconds ?? 60
           if (res && typeof res.setHeader === 'function') res.setHeader('Retry-After', String(retry))
