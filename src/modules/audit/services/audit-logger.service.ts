@@ -2,14 +2,17 @@ import { db } from '../../../infrastructure/database/db.service';
 import { auditLogs } from '../../../../drizzle/schema';
 import { logger } from '../../../infrastructure/logger/logger.service';
 
-export type AuditAction = 
+export type AuditAction =
   | 'FARM_CREATED'
   | 'FARM_UPDATED'
   | 'ANALYSIS_COMPLETED'
   | 'ALERT_CREATED'
   | 'ALERT_TRIGGERED'
-  | 'LOGIN_SUCCESS';
-
+  | 'LOGIN_SUCCESS'
+  | 'ADMIN_LIST_USERS'
+  | 'SESSION_CREATED'
+  | 'SESSION_REVOKED_ALL'
+  | 'SESSION_REVOKED';
 export interface AuditLogPayload {
   userId?: string;
   action: AuditAction;

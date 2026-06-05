@@ -1,3 +1,4 @@
+import { eq, and } from 'drizzle-orm';
 import { db } from '../infrastructure/database/db.service';
 import * as schema from '../../drizzle/schema';
 
@@ -8,7 +9,7 @@ export interface AlertRepository {
 
 export const alertRepository: AlertRepository = {
   async findActiveRulesForFarm(farmId){
-    return await db.select().from(schema.alertRules).where(schema.alertRules.farmId.eq(farmId).and(schema.alertRules.active.eq(true)));
+    return await db.select().from(schema.alertRules).where(and(eq(schema.alertRules.farmId, farmId), eq(schema.alertRules.active, true)));
   },
   async createEvent(data){
     const [row] = await db.insert(schema.alertEvents).values(data).returning();

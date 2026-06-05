@@ -71,6 +71,7 @@
     "embla-carousel-react": "^8.3.0",
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
+    "firebase": "10.12.3",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
     "next": "^15.5.19",
@@ -91,7 +92,8 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zustand": "5.0.14"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

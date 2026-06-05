@@ -3,6 +3,7 @@ import PostgresCacheProvider from '../../../src/infrastructure/cache/PostgresCac
 import CacheHealthService from '../../../src/infrastructure/health/CacheHealthService'
 import { FixedWindowLimiter } from '../../../src/infrastructure/rate-limiter/FixedWindowLimiter'
 import RateLimitHealthService from '../../../src/infrastructure/health/RateLimitHealthService'
+import { DatabaseHealthService } from '@/services/DatabaseHealthService';
 
 export async function GET() {
   try {
@@ -10,7 +11,7 @@ export async function GET() {
     const cacheStatus = await new CacheHealthService(cacheProvider).status()
 
     // create a lightweight limiter instance for a health check
-    let rateStatus = { ok: false }
+    let rateStatus: { ok: boolean; error?: string } = { ok: false }
     try {
       const limiter = new FixedWindowLimiter({ limit: 1, windowSeconds: 60 })
       const fn = async () => {
@@ -22,26 +23,20 @@ export async function GET() {
       rateStatus = { ok: false, error: String(e) }
     }
 
-    return NextResponse.json({ cache_status: cacheStatus, rate_limit_status: rateStatus, ok: cacheStatus.ok && rateStatus.ok })
+    const dbStatus = await DatabaseHealthService.check();
+    const ok = cacheStatus.ok && rateStatus.ok && dbStatus.status === 'healthy';
+
+    return NextResponse.json({
+      ok,
+      cache_status: cacheStatus,
+      rate_limit_status: rateStatus,
+      database: dbStatus,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || '1.0.0',
+    }, { status: ok ? 200 : 503 })
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 })
   }
 }
 
-export default GET
-import { NextResponse } from 'next/server';
-import { DatabaseHealthService } from '@/services/DatabaseHealthService';
-
-export async function GET() {
-  const dbStatus = await DatabaseHealthService.check();
-  
-  const status = dbStatus.status === 'healthy' ? 200 : 503;
-
-  return NextResponse.json({
-    status: dbStatus.status === 'healthy' ? 'up' : 'down',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
-    database: dbStatus,
-  }, { status });
-}

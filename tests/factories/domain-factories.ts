@@ -1,4 +1,5 @@
-import { NewFarm, NewWeatherSnapshot } from '@/modules/weather/utils/weather.mapper';
+import { NewFarm } from '@/infrastructure/database/repositories/interfaces';
+import { NewWeatherSnapshot } from '@/modules/weather/utils/weather.mapper';
 import { UserRole } from '@/modules/auth/types/auth.types';
 
 export const userFactory = (overrides?: Partial<any>) => ({

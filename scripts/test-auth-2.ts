@@ -9,3 +9,6 @@ async function test() {
   console.log('Body:', await res.text());
 }
 test();
+
+export {};
+

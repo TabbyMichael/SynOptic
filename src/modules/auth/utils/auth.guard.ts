@@ -12,7 +12,7 @@ export interface AuthContext {
  */
 export function getAuthFromRequest(req: Request | NextRequest): AuthContext {
   // Prefer headers set by reverse proxy or middleware
-  const headers: any = (req as any).headers ?? (req as any).headers || (typeof req === 'object' && (req as any).headers) || {}
+  const headers: any = (req as any).headers || (typeof req === 'object' && (req as any).headers) || {}
   // Node fetch Request uses get() method
   const getHeader = (name: string) => {
     if (typeof headers.get === 'function') return headers.get(name)

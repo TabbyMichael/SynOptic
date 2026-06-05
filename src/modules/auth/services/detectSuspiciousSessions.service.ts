@@ -27,14 +27,14 @@ export class DetectSuspiciousSessionsService {
       const reasons: string[] = [];
       let risk = SecurityRiskLevel.LOW;
 
-      const sCountry = s.location?.country;
-      const sLat = s.location?.lat;
-      const sLon = s.location?.lon;
+      const sCountry = (s.location as any)?.country;
+      const sLat = (s.location as any)?.lat;
+      const sLon = (s.location as any)?.lon;
 
       // check for multiple countries in short time windows
       for (const other of sessions) {
         if (other.id === s.id) continue;
-        const otherCountry = other.location?.country;
+        const otherCountry = (other.location as any)?.country;
         if (sCountry && otherCountry && sCountry !== otherCountry) {
           const dt = Math.abs(new Date(s.lastUsedAt).getTime() - new Date(other.lastUsedAt).getTime()) / 1000; // seconds
           if (dt < 3 * 60 * 60) {
@@ -62,8 +62,8 @@ export class DetectSuspiciousSessionsService {
       if (sLat && sLon) {
         for (const other of sessions) {
           if (other.id === s.id) continue;
-          const oLat = other.location?.lat;
-          const oLon = other.location?.lon;
+          const oLat = (other.location as any)?.lat;
+          const oLon = (other.location as any)?.lon;
           if (oLat && oLon) {
             const dist = haversineKm(sLat, sLon, oLat, oLon);
             const dt = Math.abs(new Date(s.lastUsedAt).getTime() - new Date(other.lastUsedAt).getTime()) / 1000; // seconds
@@ -76,7 +76,7 @@ export class DetectSuspiciousSessionsService {
             }
             if (speed > 500 && risk !== SecurityRiskLevel.HIGH) {
               reasons.push('Unusually fast travel between locations');
-              if (risk !== SecurityRiskLevel.HIGH) risk = SecurityRiskLevel.MEDIUM;
+              risk = SecurityRiskLevel.MEDIUM;
             }
           }
         }
