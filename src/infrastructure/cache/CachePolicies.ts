@@ -1,6 +1,7 @@
 export const DefaultTTLs = {
-  weatherCurrent: 15 * 60, // 15 minutes
-  weatherForecast: 60 * 60, // 1 hour
+  weatherCurrent: 5 * 60, // 5 minutes (user requested)
+  weatherForecast: 30 * 60, // 30 minutes (user requested)
+  weatherUsage: 60, // 60 seconds (user requested)
   farmDetails: 10 * 60, // 10 minutes
   analysisResults: 24 * 60 * 60, // 24 hours
   analytics: 30 * 60, // 30 minutes
@@ -25,6 +26,10 @@ export class CachePolicies {
 
   static forWeatherForecast(opts?: CachePolicyOptions) {
     return this.getTTL('weatherForecast', opts)
+  }
+
+  static forWeatherUsage(opts?: CachePolicyOptions) {
+    return this.getTTL('weatherUsage', opts)
   }
 
   static forFarmDetails(opts?: CachePolicyOptions) {

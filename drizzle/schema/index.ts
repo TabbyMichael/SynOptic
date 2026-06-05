@@ -5,3 +5,4 @@ export * from './alerts';
 export * from './audit';
 export * from './sessions';
 export * from './refreshTokens';
+export * from './cache';

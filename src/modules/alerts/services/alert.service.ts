@@ -1,6 +1,6 @@
 import { db } from '../../../infrastructure/database/db.service';
 import { alertRules, alertEvents } from '../../../../drizzle/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { auditLogger } from '../../audit/services/audit-logger.service';
 import { logger } from '../../../infrastructure/logger/logger.service';
 import { WeatherSnapshot } from '../../weather/utils/weather.mapper';
@@ -47,6 +47,11 @@ export class AlertService {
       entityId: event.id,
       metadata: { rule_id: ruleId, value },
     });
+  }
+
+  async getRecentAlerts(farmId?: string, limit = 5): Promise<any[]> {
+    const query = db.select().from(alertEvents).orderBy(desc(alertEvents.triggeredAt));
+    return query.limit(limit);
   }
 }
 

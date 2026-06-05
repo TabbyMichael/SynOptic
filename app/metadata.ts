@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 const SITE_NAME = 'AgroInsight AI';
 const TAGLINE = 'Weather Intelligence & Forestry Analytics';
@@ -10,6 +10,13 @@ export const SITE = {
   tagline: TAGLINE,
   url: SITE_URL,
   twitter: TWITTER_HANDLE,
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+  ],
 };
 
 export const DEFAULT_METADATA: Metadata = {
@@ -83,10 +90,6 @@ export const DEFAULT_METADATA: Metadata = {
       { rel: 'manifest', url: '/manifest.json' },
     ],
   },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
-  ],
 };
 
 export function createPageMetadata({
