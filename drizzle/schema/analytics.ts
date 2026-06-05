@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, doublePrecision, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, doublePrecision, integer, index } from 'drizzle-orm/pg-core';
 import { farms } from './farms';
 
 export const analyses = pgTable('analyses', {
@@ -14,7 +14,10 @@ export const analyses = pgTable('analyses', {
   confidenceScore: doublePrecision('confidence_score').notNull(),
   overlayUrl: text('overlay_url').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  farmIdIdx: index('analysis_farm_id_idx').on(table.farmId),
+  createdAtIdx: index('analysis_created_at_idx').on(table.createdAt),
+}));
 
 export const weatherSnapshots = pgTable('weather_snapshots', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -25,4 +28,7 @@ export const weatherSnapshots = pgTable('weather_snapshots', {
   rainfall: doublePrecision('rainfall').notNull(),
   pressure: doublePrecision('pressure').notNull(),
   capturedAt: timestamp('captured_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  farmIdIdx: index('weather_snapshot_farm_id_idx').on(table.farmId),
+  capturedAtIdx: index('weather_snapshot_captured_at_idx').on(table.capturedAt),
+}));

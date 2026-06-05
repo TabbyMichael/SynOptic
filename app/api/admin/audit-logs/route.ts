@@ -1,13 +1,15 @@
-import { NextResponse } from 'next/server'
-import { getAuthFromRequest } from '@/modules/auth/utils/auth.guard'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthContext } from '@/src/modules/auth/utils/auth.guard'
 import { adminService } from '@/modules/admin/services/admin.service'
 import { db } from '@/infrastructure/database/db.service'
 import { z } from 'zod'
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { userId, role } = getAuthFromRequest(req as any)
-    if (role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authContext = await getAuthContext(req)
+    if (!authContext || authContext.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const url = new URL(req.url)
     const raw = {

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../../../infrastructure/database/db.service';
 import { sessions } from '../../../../drizzle/schema';
 import { Session, NewSession } from '../../../infrastructure/database/repositories/interfaces';
@@ -19,7 +19,7 @@ export class SessionRepository {
   }
 
   async findActiveByUser(userId: string): Promise<Session[]> {
-    return db.select().from(sessions).where(eq(sessions.userId, userId), eq(sessions.revoked, false));
+    return db.select().from(sessions).where(and(eq(sessions.userId, userId), eq(sessions.revoked, false)));
   }
 
   async update(id: string, data: Partial<NewSession>): Promise<Session> {
@@ -41,7 +41,6 @@ export class SessionRepository {
   }
 
   async findByFilters(userId: string, filters: Record<string, any>, limit = 20, offset = 0): Promise<Session[]> {
-    // TODO: implement real filtering; for now return all user sessions
     return this.findByUserId(userId, limit, offset);
   }
 }

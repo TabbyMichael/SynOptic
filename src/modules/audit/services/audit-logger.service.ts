@@ -8,7 +8,12 @@ export type AuditAction =
   | 'ANALYSIS_COMPLETED'
   | 'ALERT_CREATED'
   | 'ALERT_TRIGGERED'
-  | 'LOGIN_SUCCESS';
+  | 'LOGIN_SUCCESS'
+  | 'SESSION_CREATED'
+  | 'USER_REGISTERED'
+  | 'SESSION_REVOKED'
+  | 'SESSION_REVOKED_ALL'
+  | 'ADMIN_LIST_USERS';
 
 export interface AuditLogPayload {
   userId?: string;

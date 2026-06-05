@@ -1,21 +1,23 @@
+import { eq } from 'drizzle-orm';
 import { db } from '../infrastructure/database/db.service';
-import * as schema from '../../drizzle/schema';
-
-export interface UserRepository {
-  findById(id: string): Promise<any | null>;
-  findByEmail(email: string): Promise<any | null>;
-  create(data: any): Promise<any>;
-}
+import { users } from '../../drizzle/schema';
+import { UserRepository, User, NewUser } from '../infrastructure/database/repositories/interfaces';
 
 export const userRepository: UserRepository = {
-  async findById(id){
-    return await db.select().from(schema.users).where(schema.users.id.eq(id)).limit(1).then(r=>r[0] ?? null);
+  async findById(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return user;
   },
-  async findByEmail(email){
-    return await db.select().from(schema.users).where(schema.users.email.eq(email)).limit(1).then(r=>r[0] ?? null);
+  async findByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return user;
   },
-  async create(data){
-    const [row] = await db.insert(schema.users).values(data).returning();
+  async create(data: NewUser): Promise<User> {
+    const [row] = await db.insert(users).values(data).returning();
+    return row;
+  },
+  async update(id: string, data: Partial<NewUser>): Promise<User> {
+    const [row] = await db.update(users).set(data).where(eq(users.id, id)).returning();
     return row;
   }
 };

@@ -1,4 +1,4 @@
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { db } from '../../../../drizzle/config';
 import { 
   users, farms, analyses, weatherSnapshots, 
@@ -7,10 +7,11 @@ import {
 import { 
   UserRepository, FarmRepository, AnalysisRepository, 
   WeatherRepository, AlertRepository, AuditRepository,
+  SessionRepository, RefreshTokenRepository,
   User, NewUser, Farm, NewFarm, Analysis, NewAnalysis,
   WeatherSnapshot, NewWeatherSnapshot, AlertRule, NewAlertRule,
-  AlertEvent, NewAlertEvent, AuditLog, NewAuditLog
-  , Session, NewSession, RefreshToken, NewRefreshToken
+  AlertEvent, NewAlertEvent, AuditLog, NewAuditLog,
+  Session, NewSession, RefreshToken, NewRefreshToken
 } from './interfaces';
 
 export class DrizzleUserRepository implements UserRepository {
@@ -113,7 +114,7 @@ export class DrizzleSessionRepository implements SessionRepository {
   }
 
   async findActiveByUser(userId: string) {
-    return db.select().from(sessions).where(eq(sessions.userId, userId), eq(sessions.revoked, false));
+    return db.select().from(sessions).where(and(eq(sessions.userId, userId), eq(sessions.revoked, false)));
   }
 
   async create(session: NewSession) {
