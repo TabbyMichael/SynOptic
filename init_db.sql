@@ -133,7 +133,10 @@ ALTER TABLE "farms" ADD COLUMN "latitude" double precision NOT NULL;--> statemen
 ALTER TABLE "farms" ADD COLUMN "longitude" double precision NOT NULL;--> statement-breakpoint
 ALTER TABLE "farms" ADD COLUMN "acres" double precision NOT NULL;--> statement-breakpoint
 ALTER TABLE "farms" ADD COLUMN "status" text DEFAULT 'ACTIVE' NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "role" "user_role" DEFAULT 'FARMER' NOT NULL;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "role" "user_role" DEFAULT 'FARMER' NOT NULL;
+ALTER TABLE "users" ADD COLUMN "is_verified" boolean DEFAULT false NOT NULL;
+ALTER TABLE "users" ADD COLUMN "email_verified" timestamp;
+--> statement-breakpoint
 ALTER TABLE "alert_events" ADD CONSTRAINT "alert_events_rule_id_alert_rules_id_fk" FOREIGN KEY ("rule_id") REFERENCES "public"."alert_rules"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "alert_rules" ADD CONSTRAINT "alert_rules_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "analyses" ADD CONSTRAINT "analyses_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

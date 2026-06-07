@@ -26,6 +26,11 @@ export class LoginService {
       throw new Error('Invalid credentials');
     }
 
+    // Email Verification Check
+    if (!user.isVerified) {
+        throw new Error('Email not verified. Please check your inbox.');
+    }
+
     const session = await this.sessionService.create({
       userId: user.id,
       ...deviceInfo,

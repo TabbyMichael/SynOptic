@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Leaf, Eye, EyeOff } from 'lucide-react';
+import { Leaf, Eye, EyeOff, UserCircle } from 'lucide-react';
 import { APP_NAME } from '@/lib/constants';
 
 const signupSchema = z.object({
@@ -23,7 +23,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
   const router = useRouter();
-  const { loginWithGoogle } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -35,10 +35,15 @@ export function SignupForm() {
 
   const onSubmit = async (values: SignupFormValues) => {
     setLoading(true);
-    // TODO: Implement registration logic
-    console.log(values);
-    setLoading(false);
-    router.push('/dashboard');
+    setError('');
+    try {
+      await signup(values.name, values.email, values.password);
+      // signup() automatically calls login and redirects to dashboard
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignup = async () => {
@@ -65,7 +70,7 @@ export function SignupForm() {
           <Leaf className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
         </div>
         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-        <CardDescription>Get started with {APP_NAME}</CardDescription>
+        <CardDescription>Get started as a <span className="font-bold text-emerald-600">Farmer</span> on {APP_NAME}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignup} disabled={loading}>
@@ -77,7 +82,7 @@ export function SignupForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-card px-2 text-muted-foreground">Or sign up with email</span>
           </div>
         </div>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -107,11 +112,20 @@ export function SignupForm() {
                 </button>
             </div>
           </div>
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl flex items-center gap-3">
+              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                  <UserCircle className="h-4 w-4 text-emerald-600" />
+              </div>
+              <div>
+                  <p className="text-xs font-black uppercase text-emerald-800 dark:text-emerald-400">Account Type</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-500">Signing up as a Farmer (Authority to create firms)</p>
+              </div>
+          </div>
           {error && (
               <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
           )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign up'}
+            {loading ? 'Creating account...' : 'Create Farmer Account'}
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground">
