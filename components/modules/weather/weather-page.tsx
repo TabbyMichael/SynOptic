@@ -54,13 +54,13 @@ export default function WeatherPage() {
     rainProbability: forecast[0]?.precipitation_probability ?? 0,
   } : null;
 
-  const chartData = forecast.map((day: DailyForecastItem) => ({
+  const chartData = forecast.map((day: any) => ({
     date: format(new Date(day.date), 'MMM dd'),
     shortDate: format(new Date(day.date), 'EEE'),
     high: day.temp_max,
     low: day.temp_min,
     rain: day.precipitation_probability,
-    wind: day.wind_speed || 0,
+    wind: day.wind_speed || day.wind || 0,
   })) as any[];
 
   const metricCards = [
