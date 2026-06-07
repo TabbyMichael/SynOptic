@@ -42,6 +42,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
           size="icon"
           className="h-8 w-8 sm:hidden"
           onClick={onMenuClick}
+          aria-label="Open mobile menu"
         >
           <Menu className="h-4 w-4" />
         </Button>
@@ -49,7 +50,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         <div className="h-8 w-8" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full" aria-label="User menu">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-xs">
                   {initials}
@@ -85,6 +86,7 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         size="icon"
         className="h-8 w-8 sm:hidden"
         onClick={onMenuClick}
+        aria-label="Open mobile menu"
       >
         <Menu className="h-4 w-4" />
       </Button>
@@ -94,13 +96,14 @@ export function AppHeader({ onMenuClick }: AppHeaderProps) {
         size="icon"
         className="h-8 w-8"
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        aria-label="Toggle theme"
       >
         <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
         <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full" aria-label="User menu">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 text-xs">
                 {initials}

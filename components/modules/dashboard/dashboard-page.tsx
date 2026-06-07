@@ -1,8 +1,8 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Heart, Cloud, Bell, Activity, Zap, Thermometer, Wind, Droplets } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MetricCard, LoadingSkeleton, ErrorState } from '@/components/shared';
 import { mockHealthTrend, mockWeatherTrend, mockRecentActivity } from '@/lib/mock-data';
@@ -10,13 +10,30 @@ import { PageHeader } from '@/components/shared';
 import { WeatherHeroCard } from './widgets/weather-hero-card';
 import { WeatherAIInsightCard } from './widgets/weather-ai-insight-card';
 import { WeatherForecastWidget } from './widgets/weather-forecast-widget';
-import { ForestryStatusWidget } from './widgets/forestry-status-widget';
-import { ForestryPreviewWidget } from './widgets/forestry-preview-widget';
-import { AnalyticsChart } from './widgets/analytics-chart';
 import { WeatherAlertsPanel } from './widgets/weather-alerts-panel';
-import { APIUsageWidget } from './widgets/api-usage-widget';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { format } from 'date-fns';
+
+// Dynamic imports for heavy chart widgets
+const AnalyticsChart = dynamic(() => import('./widgets/analytics-chart').then(mod => mod.AnalyticsChart), {
+  loading: () => <LoadingSkeleton type="card" count={1} className="h-[350px] col-span-2" />,
+  ssr: false
+});
+
+const APIUsageWidget = dynamic(() => import('./widgets/api-usage-widget').then(mod => mod.APIUsageWidget), {
+  loading: () => <LoadingSkeleton type="card" count={1} className="h-[350px]" />,
+  ssr: false
+});
+
+const ForestryStatusWidget = dynamic(() => import('./widgets/forestry-status-widget').then(mod => mod.ForestryStatusWidget), {
+  loading: () => <LoadingSkeleton type="card" count={1} className="h-[200px]" />,
+  ssr: false
+});
+
+const ForestryPreviewWidget = dynamic(() => import('./widgets/forestry-preview-widget').then(mod => mod.ForestryPreviewWidget), {
+  loading: () => <LoadingSkeleton type="card" count={1} className="h-[200px]" />,
+  ssr: false
+});
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboardData();

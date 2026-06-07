@@ -7,13 +7,9 @@ import { AppHeader } from '@/components/shared/app-header';
 import { cn } from '@/lib/utils';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  
-  console.log('AppShell mounted');
-
-  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,7 +25,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <AppHeader onMenuClick={() => setMobileOpen(true)} />
-        <main className="p-4 sm:p-6">{children}</main>
+        <main className="p-4 sm:p-6 min-h-[calc(100vh-3.5rem)]">
+          {!isAuthenticated && !authLoading ? null : children}
+        </main>
       </div>
     </div>
   );

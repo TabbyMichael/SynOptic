@@ -8,4 +8,5 @@ export { EmptyState } from './empty-state';
 export { ErrorState } from './error-state';
 export { LoadingSkeleton } from './loading-skeleton';
 export { ChartCard } from './chart-card';
+export { CSSChart } from './css-chart';
 export { ConfirmationDialog } from './confirmation-dialog';

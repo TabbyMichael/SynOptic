@@ -1,6 +1,10 @@
-'use client';
-
+import { Metadata } from 'next';
 import { LoginForm } from '@/components/login-form';
+import { generateAuthMetadata } from '../../metadata';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return generateAuthMetadata('Sign in');
+}
 
 export default function LoginPage() {
   return (

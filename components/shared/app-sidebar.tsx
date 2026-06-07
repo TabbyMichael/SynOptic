@@ -49,7 +49,6 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const pathname = usePathname();
   const { user } = useAuth();
   const items = user ? NAV_ITEMS[user.role] : NAV_ITEMS.FARMER;
-  console.log('Sidebar items:', items);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -73,6 +72,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
             size="icon"
             className="h-8 w-8 shrink-0"
             onClick={onToggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <ChevronLeft
               className={cn(

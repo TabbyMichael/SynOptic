@@ -1,15 +1,13 @@
-'use client';
-
-import { useAuth } from '@/lib/providers/auth-provider';
-import { LoginForm } from '@/components/login-form';
+import { Metadata } from 'next';
 import { AppShell } from '@/components/app-shell';
 import WeatherPage from '@/components/modules/weather/weather-page';
+import { generateWeatherMetadata } from '../metadata';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return generateWeatherMetadata();
+}
 
 export default function WeatherRoute() {
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated) return <LoginForm />;
-
   return (
     <AppShell>
       <WeatherPage />
