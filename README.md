@@ -298,10 +298,13 @@ Comprehensive documentation is available in the [Docs/](./Docs) folder:
 3. Copy `.env.example` to `.env` and fill in the values
 
 ### Database Setup
+For development, you can use:
 ```bash
 npm run db:push
 npm run db:seed
 ```
+
+For production database initialization, please refer to the [Database Setup Guide](./Docs/database-setup.md).
 
 ### Running the App
 ```bash
