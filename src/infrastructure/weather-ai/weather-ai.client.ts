@@ -7,7 +7,7 @@ import { CachePolicies } from '../cache/CachePolicies';
 
 export class WeatherAiClient {
   private readonly baseUrl = process.env.WEATHER_AI_BASE_URL || 'https://api.weather-ai.co';
-  private readonly apiKey = process.env.WEATHER_AI_API_KEY;
+  private readonly apiKey = process.env.WEATHERAI_API_KEY;
 
   private isMockMode(): boolean {
     return !this.apiKey || this.apiKey === 'your-weatherai-key' || this.apiKey.includes('your-');
@@ -150,6 +150,7 @@ export class WeatherAiClient {
           daily: Array.from({ length: 7 }).map((_, i) => ({
               date: new Date(Date.now() + i * 86400000).toISOString().split('T')[0],
               temp_min: 16 + i, temp_max: 22 + i, precipitation_probability: 10 * i,
+              wind_speed: 10 + (i * 2),
               condition_code: 'sunny', icon: '☀️'
           }))
       };

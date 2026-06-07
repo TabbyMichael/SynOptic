@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Leaf, Eye, EyeOff } from 'lucide-react';
 import { APP_NAME } from '@/lib/constants';
+import Image from 'next/image';
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -88,8 +89,9 @@ export function LoginForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+...
             <Button type="button" variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading}>
-              <img src="/Logos/google.png" alt="Google Logo" className="mr-2 h-4 w-4" />
+              <Image src="/Logos/google.png" alt="Google Logo" width={16} height={16} className="mr-2" />
               Sign in with Google
             </Button>
             <div className="relative">
@@ -132,6 +134,7 @@ export function LoginForm() {
                   type="button"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>

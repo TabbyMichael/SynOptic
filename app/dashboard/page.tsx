@@ -1,25 +1,13 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/providers/auth-provider';
+import { Metadata } from 'next';
 import { AppShell } from '@/components/app-shell';
 import DashboardPage from '@/components/modules/dashboard/dashboard-page';
+import { generateDashboardMetadata } from '../metadata';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return generateDashboardMetadata();
+}
 
 export default function DashboardRoute() {
-  const router = useRouter();
-  const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return (
     <AppShell>
       <DashboardPage />
