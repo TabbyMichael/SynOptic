@@ -8,8 +8,8 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth as firebaseAuth } from '@/lib/firebase';
 import type { User, Role } from '@/lib/types';
 
 interface AuthContextValue {
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (firebaseUser) => {
+    return onAuthStateChanged(firebaseAuth, (firebaseUser) => {
       if (firebaseUser) {
         setUser({
           id: firebaseUser.uid,
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = useCallback(async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(firebaseAuth, provider);
       return true;
     } catch (error) {
       console.error('Google Auth Error:', error);
@@ -61,7 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await auth.signOut();
+    try {
+      await signOut(firebaseAuth);
+    } catch (error) {
+      console.error('Logout Error:', error);
+    }
   }, []);
 
   const switchRole = useCallback((role: Role) => {}, []);

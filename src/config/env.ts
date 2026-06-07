@@ -33,7 +33,7 @@ if (!_env.success) {
 }
 
 if (!isBuildPhase) {
-  const required = ['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB', 'DATABASE_URL', 'NEXTAUTH_URL', 'NEXTAUTH_SECRET'] as const;
+  const required = ['DATABASE_URL', 'NEXTAUTH_URL', 'NEXTAUTH_SECRET'] as const;
   const missing = required.filter(k => !_env.data![k]);
   if (missing.length > 0) {
     console.error('❌ Missing required environment variables:', missing.join(', '));

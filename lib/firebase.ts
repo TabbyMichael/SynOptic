@@ -19,7 +19,16 @@ if (firebaseConfig.apiKey) {
   const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   auth = getAuth(app);
 } else {
-  auth = {} as Auth;
+  // Return a proxy or a more robust mock if auth is not initialized,
+  // but preferably it should be handled by the provider.
+  auth = {
+    onAuthStateChanged: (cb: any) => {
+      console.warn('Firebase Auth not initialized: Missing API Key');
+      cb(null);
+      return () => {};
+    },
+    signOut: async () => {},
+  } as unknown as Auth;
 }
 
 export { auth };
