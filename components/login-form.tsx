@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -15,16 +15,17 @@ import { APP_NAME } from '@/lib/constants';
 import Image from 'next/image';
 
 const loginSchema = z.object({
-  email: z.string().email('Enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Enter a valid email address').or(z.literal('')),
+  password: z.string().min(6, 'Password must be at least 6 characters').or(z.literal('')),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-const demoAccounts = [
-  { label: 'Admin', email: 'admin@agroinsight.ai', role: 'Full system access' },
-  { label: 'Farmer', email: 'farmer@agroinsight.ai', role: 'Farm management' },
-];
+interface DemoAccount {
+  label: string;
+  email: string;
+  role: string;
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -32,6 +33,25 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([
+    { label: 'Admin', email: 'kibuguian@gmail.com', role: 'Full system access' },
+    { label: 'Farmer', email: 'farmer@agroinsight.ai', role: 'Farm management' },
+  ]);
+
+  useEffect(() => {
+    async function fetchDemoUsers() {
+      try {
+        const response = await fetch('/api/auth/demo-users');
+        if (response.ok) {
+          const data = await response.json();
+          setDemoAccounts(data);
+        }
+      } catch (err) {
+        console.error('Failed to load demo accounts:', err);
+      }
+    }
+    fetchDemoUsers();
+  }, []);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -39,14 +59,18 @@ export function LoginForm() {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
+    if (!values.email || !values.password) {
+        setError('Enter a valid email address and password.');
+        return;
+    }
+
     setLoading(true);
     setError('');
     try {
-      const success = await login(values.email, values.password);
-      if (success) router.push('/dashboard');
-      else setError('Invalid credentials');
-    } catch {
-      setError('An error occurred. Please try again.');
+      const success = await login(values.email as string, values.password as string);
+      if (!success) setError('Invalid email or password. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during sign in.');
     } finally {
       setLoading(false);
     }
@@ -57,22 +81,36 @@ export function LoginForm() {
     setError('');
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
-    } catch {
-      setError('An error occurred. Please try again.');
+    } catch (err: any) {
+      setError('Google sign-in failed. Please ensure your redirect URIs are correct.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDemoLogin = async (email: string) => {
+  const handleDemoLogin = async (demoEmail: string) => {
+    // 1. Get current form values to see if user typed something manually
+    const currentEmail = form.getValues('email');
+    const currentPassword = form.getValues('password');
+
+    // 2. Prioritize manual input if fields are filled, otherwise use demo defaults
+    const emailToUse = (currentEmail && currentEmail.length > 0) ? currentEmail : demoEmail;
+    const passwordToUse = (currentPassword && currentPassword.length > 0) ? currentPassword : 'demo123';
+
+    if (!emailToUse || !passwordToUse) {
+        setError('Enter a valid email address and password.');
+        return;
+    }
+
     setLoading(true);
     setError('');
     try {
-      await login(email, 'demo123');
-      router.push('/dashboard');
-    } catch {
-      setError('An error occurred. Please try again.');
+      const result = await login(emailToUse as string, passwordToUse as string);
+      if (!result) {
+        setError('Sign in failed. Invalid credentials for this account type.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during authentication.');
     } finally {
       setLoading(false);
     }
@@ -88,20 +126,19 @@ export function LoginForm() {
           <CardDescription>Sign in to your farm intelligence platform</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-...
-            <Button type="button" variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading}>
-              <Image src="/Logos/google.png" alt="Google Logo" width={16} height={16} className="mr-2" />
-              Sign in with Google
-            </Button>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-              </div>
+          <Button type="button" variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading}>
+            <Image src="/Logos/google.png" alt="Google Logo" width={16} height={16} className="mr-2" />
+            Sign in with Google
+          </Button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
             </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -147,7 +184,7 @@ export function LoginForm() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400 text-center font-medium animate-in fade-in slide-in-from-top-1">{error}</p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign in'}
@@ -164,7 +201,7 @@ export function LoginForm() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Demo accounts</span>
+              <span className="bg-card px-2 text-muted-foreground">Quick Access</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -173,10 +210,11 @@ export function LoginForm() {
                 key={account.email}
                 type="button"
                 onClick={() => handleDemoLogin(account.email)}
-                className="flex flex-col items-center rounded-lg border p-3 text-sm transition-colors hover:bg-emerald-50 hover:border-emerald-200 dark:hover:bg-emerald-950/30 dark:hover:border-emerald-800"
+                disabled={loading}
+                className="flex flex-col items-center rounded-lg border p-3 text-sm transition-colors hover:bg-emerald-50 hover:border-emerald-200 dark:hover:bg-emerald-950/30 dark:hover:border-emerald-800 disabled:opacity-50"
               >
                 <span className="font-medium">{account.label}</span>
-                <span className="text-xs text-muted-foreground">{account.role}</span>
+                <span className="text-[10px] text-muted-foreground">{account.role}</span>
               </button>
             ))}
           </div>

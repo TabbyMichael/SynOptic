@@ -40,15 +40,30 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
+      const email = user.email!;
+      const isAdminEmail = email === 'kibuguian@gmail.com';
+
       if (account?.provider === 'google') {
-        // Handle Google user creation/linking
-        const existingUser = await userRepository.findByEmail(user.email!);
+        const existingUser = await userRepository.findByEmail(email);
         if (!existingUser) {
           await userRepository.create({
-            email: user.email!,
+            email,
             name: user.name!,
-            role: 'FARMER',
+            role: isAdminEmail ? 'ADMIN' : 'FARMER',
+            isVerified: true, // Google accounts are pre-verified
+            emailVerified: new Date(),
           });
+        } else {
+            // Update role if it's the designated admin and mark as verified if they weren't
+            const updates: any = {};
+            if (isAdminEmail && existingUser.role !== 'ADMIN') updates.role = 'ADMIN';
+            if (!existingUser.isVerified) {
+                updates.isVerified = true;
+                updates.emailVerified = new Date();
+            }
+            if (Object.keys(updates).length > 0) {
+                await userRepository.update(existingUser.id, updates);
+            }
         }
       }
       return true;

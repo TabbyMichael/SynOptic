@@ -36,6 +36,7 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | undefined>;
   create(user: NewUser): Promise<User>;
   update(id: string, data: Partial<NewUser>): Promise<User>;
+  findDemoUsers(): Promise<User[]>;
 }
 
 export interface FarmRepository {

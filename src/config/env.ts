@@ -14,8 +14,11 @@ const envSchema = z.object({
   TEST_DATABASE_URL: z.string().default(''),
 
   // Auth
-  NEXTAUTH_URL: z.string().default(''),
-  NEXTAUTH_SECRET: z.string().default(''),
+  NEXTAUTH_URL: z.string().optional(),
+  NEXTAUTH_SECRET: z.string().optional(),
+  AUTH_SECRET: z.string().optional(),
+  AUTH_URL: z.string().optional(),
+  AUTH_TRUST_HOST: z.string().optional(),
 
   // Third Party
   WEATHERAI_API_KEY: z.string().optional(),
@@ -33,10 +36,16 @@ if (!_env.success) {
 }
 
 if (!isBuildPhase) {
-  const required = ['DATABASE_URL', 'NEXTAUTH_URL', 'NEXTAUTH_SECRET'] as const;
+  const required = ['DATABASE_URL'] as const;
   const missing = required.filter(k => !_env.data![k]);
-  if (missing.length > 0) {
-    console.error('❌ Missing required environment variables:', missing.join(', '));
+  
+  // Custom check for secrets: must have at least one of these pairs
+  const hasNextAuth = _env.data?.NEXTAUTH_URL && _env.data?.NEXTAUTH_SECRET;
+  const hasAuthV5 = _env.data?.AUTH_SECRET; // Auth.js v5 can often infer the URL
+
+  if (missing.length > 0 || (!hasNextAuth && !hasAuthV5)) {
+    const secretError = (!hasNextAuth && !hasAuthV5) ? ' (Missing AUTH_SECRET or NEXTAUTH_SECRET)' : '';
+    console.error('❌ Missing required environment variables:', missing.join(', ') + secretError);
     process.exit(1);
   }
 }

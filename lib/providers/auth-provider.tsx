@@ -9,13 +9,13 @@ import {
   type ReactNode,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth as firebaseAuth } from '@/lib/firebase';
+import { signIn, signOut, useSession, SessionProvider } from 'next-auth/react';
 import type { User, Role } from '@/lib/types';
 
 interface AuthContextValue {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   logout: () => void;
   switchRole: (role: Role) => void;
@@ -25,36 +25,66 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+function AuthProviderInner({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const isLoading = status === 'loading';
 
   useEffect(() => {
-    return onAuthStateChanged(firebaseAuth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          name: firebaseUser.displayName || '',
-          role: 'FARMER',
-          createdAt: new Date().toISOString(),
-        });
-      } else {
-        setUser(null);
-      }
-      setIsLoading(false);
-    });
-  }, []);
+    if (session?.user) {
+      setUser({
+        id: (session.user as any).id || '',
+        email: session.user.email || '',
+        name: session.user.name || '',
+        role: (session.user as any).role || 'FARMER',
+        createdAt: new Date().toISOString(),
+      });
+    } else {
+      setUser(null);
+    }
+  }, [session]);
 
   const login = useCallback(async (email: string, _password: string) => {
-    return false;
-  }, []);
+    const result = await signIn('credentials', {
+        email,
+        password: _password,
+        redirect: false,
+    });
+    
+    if (result?.error) {
+        console.error('Login Error:', result.error);
+        return false;
+    }
+    
+    router.push('/dashboard');
+    return true;
+  }, [router]);
+
+  const signup = useCallback(async (name: string, email: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed');
+      }
+
+      // Automatically sign in after signup
+      return login(email, password);
+    } catch (error: any) {
+      console.error('Signup Error:', error.message);
+      throw error;
+    }
+  }, [login]);
 
   const loginWithGoogle = useCallback(async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(firebaseAuth, provider);
+      await signIn('google', { callbackUrl: '/dashboard' });
       return true;
     } catch (error) {
       console.error('Google Auth Error:', error);
@@ -64,28 +94,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await signOut(firebaseAuth);
-      router.push('/auth/login');
+      await signOut({ callbackUrl: '/auth/login' });
     } catch (error) {
       console.error('Logout Error:', error);
     }
-  }, [router]);
+  }, []);
 
   const switchRole = useCallback((role: Role) => {}, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, login, loginWithGoogle, logout, switchRole, isAuthenticated: !!user, isLoading }}
+      value={{ user, login, signup, loginWithGoogle, logout, switchRole, isAuthenticated: !!user, isLoading }}
     >
       {isLoading ? (
         <div className="flex items-center justify-center min-h-screen bg-background">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            <p className="text-sm font-medium text-muted-foreground animate-pulse">Securing session...</p>
+          </div>
         </div>
       ) : (
         children
       )}
     </AuthContext.Provider>
   );
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    return (
+        <SessionProvider>
+            <AuthProviderInner>
+                {children}
+            </AuthProviderInner>
+        </SessionProvider>
+    );
 }
 
 export function useAuth() {

@@ -245,13 +245,28 @@ AgroInsight AI follows a modular monolith architecture with a feature-first stru
 
 Placeholder sections for future visuals:
 
-- **Dashboard**: ![Dashboard](docs/screenshots/dashboard.png)
-- **Farm Management**: ![Farms](docs/screenshots/farms.png)
-- **Forestry Analysis**: ![Forestry](docs/screenshots/forestry.png)
-- **Weather Dashboard**: ![Weather](docs/screenshots/weather.png)
-- **Alerts**: ![Alerts](docs/screenshots/alerts.png)
-- **Analytics**: ![Analytics](docs/screenshots/analytics.png)
-- **Administration**: ![Admin](docs/screenshots/admin.png)
+- **AUthentication**: 
+![Auth](public/assets/docs/AU.png)
+
+- **Dashboard**: 
+![Dashboard](public/assets/docs/B1.png)  
+![Dashboard](public/assets/docs/B2.png)
+- **Farm Management**:
+![Farms](public/assets/docs/FM 1.png)
+![Farms](public/assets/docs/FM 2.png)
+- **Forestry Analysis**: 
+![Forestry](public/assets/docs/FA 1.png)                
+![Forestry](public/assets/docs/FA 2.png)
+- **Weather Dashboard**: 
+![Weather](public/assets/docs/WD 1.png)
+![Weather](public/assets/docs/WD 2.png)
+- **Alerts**: 
+![Alerts](public/assets/docs/A 1.png)
+![Alerts](public/assets/docs/A 2.png)
+
+- **Analytics**: 
+![Analytics](public/assets/docs/AS 1.png)
+![Analytics](public/assets/docs/AS 1.png)
 
 ---
 
