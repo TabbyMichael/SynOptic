@@ -8,6 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
+import { useRouter } from 'next/navigation';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth as firebaseAuth } from '@/lib/firebase';
 import type { User, Role } from '@/lib/types';
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     return onAuthStateChanged(firebaseAuth, (firebaseUser) => {
@@ -63,10 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await signOut(firebaseAuth);
+      router.push('/auth/login');
     } catch (error) {
       console.error('Logout Error:', error);
     }
-  }, []);
+  }, [router]);
 
   const switchRole = useCallback((role: Role) => {}, []);
 

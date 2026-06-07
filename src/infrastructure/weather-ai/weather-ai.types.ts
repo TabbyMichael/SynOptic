@@ -34,6 +34,7 @@ export interface WeatherAiForecastResponse {
     precipitation_probability: number;
     condition_code: string;
     icon: string;
+    wind_speed?: number;
     
     // Compatibility fields if any
     day?: string;
