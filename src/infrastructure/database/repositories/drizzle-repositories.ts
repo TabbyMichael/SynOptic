@@ -31,6 +31,11 @@ export class DrizzleUserRepository implements UserRepository {
     const [updated] = await db.update(users).set({ ...data, updatedAt: new Date() }).where(eq(users.id, id)).returning();
     return updated;
   }
+  async findDemoUsers(): Promise<User[]> {
+    const admin = await db.select().from(users).where(eq(users.role, 'ADMIN')).limit(1);
+    const farmer = await db.select().from(users).where(eq(users.role, 'FARMER')).limit(1);
+    return [...admin, ...farmer];
+  }
 }
 
 export class DrizzleFarmRepository implements FarmRepository {
