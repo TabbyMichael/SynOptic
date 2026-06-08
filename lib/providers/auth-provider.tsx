@@ -86,8 +86,10 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
     try {
       const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
       const { auth } = await import('@/lib/firebase');
-      
+
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const idToken = await user.getIdToken();
@@ -117,14 +119,18 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
       if (nextAuthResult?.error) {
         throw new Error(nextAuthResult.error);
       }
-      
+
       router.push('/dashboard');
       return true;
     } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        return false;
+      }
       console.error('Google Auth Error:', error);
       return false;
     }
   }, [router]);
+
 
   const logout = useCallback(async () => {
     try {
