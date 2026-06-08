@@ -84,13 +84,47 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = useCallback(async () => {
     try {
-      await signIn('google', { callbackUrl: '/dashboard' });
+      const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+      const { auth } = await import('@/lib/firebase');
+      
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      // 1. Sync Firebase user with our Database
+      const syncResponse = await fetch('/api/auth/firebase-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.displayName,
+          idToken: idToken,
+        }),
+      });
+
+      if (!syncResponse.ok) {
+        throw new Error('Failed to sync user data');
+      }
+
+      // 2. Sign in to NextAuth session using the credentials provider with the Firebase bypass
+      const nextAuthResult = await signIn('credentials', {
+        email: user.email,
+        isFirebase: 'true',
+        redirect: false,
+      });
+
+      if (nextAuthResult?.error) {
+        throw new Error(nextAuthResult.error);
+      }
+      
+      router.push('/dashboard');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google Auth Error:', error);
       return false;
     }
-  }, []);
+  }, [router]);
 
   const logout = useCallback(async () => {
     try {
