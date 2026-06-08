@@ -3,14 +3,13 @@ import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import { userRepository } from '../../repositories/user.repository';
 import { loginService } from '../../modules/auth/services/login.service';
-import { logger } from '../logger/logger.service';
 import { Role } from '@/lib/types';
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET,
     }),
     Credentials({
       name: 'Credentials',
